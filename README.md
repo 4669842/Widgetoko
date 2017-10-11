@@ -1,6 +1,6 @@
 # Widgetoko
 
-An Electron demonstration app written in C# using Bridge and Retyped.
+An Electron demonstration app written in C# using [Bridge](http://bridge.net) and [Retyped](https://retyped.com).
 
 ## Start App
 
