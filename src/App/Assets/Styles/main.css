@@ -312,12 +312,6 @@ label {
   background-color: var(--gray-800);
 }
 
-.app-toolbar .filter a {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-}
-
 /* Notifications Switch */
 
 .app-toolbar .notifications {
