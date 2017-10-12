@@ -163,6 +163,10 @@ input[type="checkbox"]:checked + .switch {
   background-color: #fff;
 }
 
+.tweet-card:hover {
+  background-color: var(--gray-100);
+}
+
 .tweet-card .username {
   color: var(--gray-900);
 }

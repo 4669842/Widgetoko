@@ -416,8 +416,12 @@ input[type="checkbox"]:checked + .switch:after {
   display: flex;
   border-bottom: 1px solid var(--gray-200);
   background-color: #fff;
-  cursor: default;
+  cursor: pointer;
   transition: all 0.35s;
+}
+
+.tweet-card:hover {
+  background-color: var(--gray-100);
 }
 
 .tweet-card .avatar {
