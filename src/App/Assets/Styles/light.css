@@ -68,7 +68,7 @@ label {
 
 /* Placeholder */
 .placeholder {
-  color: var(--gray-400);
+  color: var(--gray-600);
 }
 
 .placeholder .logo {
