@@ -196,7 +196,8 @@ namespace Widgetoko.MainProcess
 
             // Create the browser window.
             var optionsWin = new electron.Electron.BrowserWindow(options);
-            SetMainMenuForOptions(optionsWin);
+
+            optionsWin.setMenu(null);
             SetContextMenu(optionsWin);
 
             App.LoadWindow(optionsWin, "Forms/OptionsForm.html");

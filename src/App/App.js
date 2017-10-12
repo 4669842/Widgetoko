@@ -57,7 +57,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
             fields: {
                 Electron: null,
                 Win: null,
-                AppIcon: null,
+                "AppIcon": null,
                 ContextMenu: null,
                 _settings: null
             },
@@ -167,7 +167,8 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
 
                     // Create the browser window.
                     var optionsWin = new Electron.BrowserWindow(options);
-                    Widgetoko.MainProcess.App.SetMainMenuForOptions(optionsWin);
+
+                    optionsWin.setMenu(null);
                     Widgetoko.MainProcess.App.SetContextMenu(optionsWin);
 
                     Widgetoko.MainProcess.App.LoadWindow(optionsWin, "Forms/OptionsForm.html");
@@ -220,10 +221,10 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
 
                     var iconPath = process.platform === "darwin" ? icon16Path : icon32Path;
 
-                    Widgetoko.MainProcess.App.AppIcon = new Electron.Tray(iconPath);
-                    Widgetoko.MainProcess.App.AppIcon.setToolTip("Widgetoko");
-                    Widgetoko.MainProcess.App.AppIcon.setContextMenu(Widgetoko.MainProcess.App.ContextMenu);
-                    Widgetoko.MainProcess.App.AppIcon.on("click", function () {
+                    Widgetoko.MainProcess.App["AppIcon"] = new Electron.Tray(iconPath);
+                    Widgetoko.MainProcess.App["AppIcon"].setToolTip("Widgetoko");
+                    Widgetoko.MainProcess.App["AppIcon"].setContextMenu(Widgetoko.MainProcess.App.ContextMenu);
+                    Widgetoko.MainProcess.App["AppIcon"].on("click", function () {
                         showFn();
                     });
                 },
@@ -270,7 +271,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         msgBoxOpts.type = "info";
                         msgBoxOpts.title = "About";
                         msgBoxOpts.buttons = System.Array.init(["OK"], System.String);
-                        msgBoxOpts.message = System.String.concat(System.String.concat("Widgetoko.\n\nNode: " + (process.versions.node || "") + "\nChrome: ", process.versions.chrome) + "\nElectron: ", process.versions.electron);
+                        msgBoxOpts.message = System.String.concat(System.String.concat("Widgetoko.\r\n\r\nNode: " + (process.versions.node || "") + "\r\nChrome: ", process.versions.chrome) + "\r\nElectron: ", process.versions.electron);
 
                         Electron.dialog.showMessageBox(msgBoxOpts);
                     } }], System.Object) };
@@ -340,7 +341,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                     startMenuItem.enabled = isStarted;
                     stopMenuItem.enabled = !isStarted;
 
-                    if (Widgetoko.MainProcess.App.AppIcon != null && Widgetoko.MainProcess.App.ContextMenu != null) {
+                    if (Widgetoko.MainProcess.App["AppIcon"] != null && Widgetoko.MainProcess.App.ContextMenu != null) {
                         var captureCtxMenu = System.Linq.Enumerable.from(Widgetoko.MainProcess.App.ContextMenu.items).first(function (x) {
                                 return Bridge.referenceEquals(x.label, "Capture");
                             }).submenu;
