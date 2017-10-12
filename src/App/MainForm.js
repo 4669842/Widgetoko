@@ -24,7 +24,8 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                 DarkThemeCss: null,
                 Electron: null,
                 _listener: null,
-                _lastNotificationDate: null
+                _lastNotificationDate: null,
+                _isStarted: false
             },
             ctors: {
                 init: function () {
@@ -36,6 +37,23 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
             },
             methods: {
                 ConfigureEventHandlers: function () {
+                    jQuery("#captureFilterInput").on("keypress", function (e, args) {
+                        if (e.keyCode === 13) {
+                            if (Widgetoko.RendererProcess.MainForm._isStarted) {
+                                Electron.ipcRenderer.send("cmd-stop-capture");
+
+                                // Let "stop" event be processed first:
+                                setTimeout(function (ev) {
+                                    Electron.ipcRenderer.send("cmd-start-capture");
+                                }, 1000);
+                            } else {
+                                Electron.ipcRenderer.send("cmd-start-capture");
+                            }
+                        }
+
+                        return null;
+                    });
+
                     jQuery(".play").on("click", function (e, args) {
                         Electron.ipcRenderer.send("cmd-start-capture");
                         return null;
@@ -55,6 +73,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         Widgetoko.RendererProcess.MainForm._listener = Widgetoko.RendererProcess.MainForm.InitListener();
                         if (Widgetoko.RendererProcess.MainForm._listener != null) {
                             Widgetoko.RendererProcess.MainForm._listener.Start();
+                            Widgetoko.RendererProcess.MainForm._isStarted = true;
                         } else {
                             // Can't start capturing due to some error (no filter, no credentials)
                             Electron.ipcRenderer.send("cmd-stop-capture");
@@ -66,6 +85,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         jQuery(".play").show();
 
                         Widgetoko.RendererProcess.MainForm._listener != null ? Widgetoko.RendererProcess.MainForm._listener.Stop() : null;
+                        Widgetoko.RendererProcess.MainForm._isStarted = false;
                     });
 
                     Electron.ipcRenderer.on("cmd-clear-capture", function () {

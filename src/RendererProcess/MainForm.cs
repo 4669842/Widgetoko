@@ -29,6 +29,8 @@ namespace Widgetoko.RendererProcess
 
         private static DateTime? _lastNotificationDate;
 
+        private static bool _isStarted;
+
         public static void Main()
         {
             // Configure handlers for IPC commands:
@@ -43,6 +45,29 @@ namespace Widgetoko.RendererProcess
 
         private static void ConfigureEventHandlers()
         {
+            jquery.jQuery.select("#captureFilterInput").on("keypress", (e, args) =>
+            {
+                if (e.keyCode == 13)
+                {
+                    if (_isStarted)
+                    {
+                        Electron.ipcRenderer.send(Constants.IPC.StopCapture);
+
+                        // Let "stop" event be processed first:
+                        dom.setTimeout(ev =>
+                        {
+                            Electron.ipcRenderer.send(Constants.IPC.StartCapture);
+                        }, 1000);
+                    }
+                    else
+                    {
+                        Electron.ipcRenderer.send(Constants.IPC.StartCapture);
+                    }
+                }
+
+                return null;
+            });
+
             jquery.jQuery.select(".play").on("click", (e, args) =>
             {
                 Electron.ipcRenderer.send(Constants.IPC.StartCapture);
@@ -68,6 +93,7 @@ namespace Widgetoko.RendererProcess
                 if (_listener != null)
                 {
                     _listener.Start();
+                    _isStarted = true;
                 }
                 else
                 {
@@ -82,6 +108,7 @@ namespace Widgetoko.RendererProcess
                 jquery.jQuery.select(".play").show();
 
                 _listener?.Stop();
+                _isStarted = false;
             });
 
             Electron.ipcRenderer.on(Constants.IPC.ClearCapture, () =>
