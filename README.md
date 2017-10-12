@@ -3,6 +3,8 @@
 An Electron demonstration app written in C# using [Bridge](http://bridge.net) and [Retyped](https://retyped.com).
 The application allows to capture real-time tweets satisfying to a specified filter.
 
+<p align="center"><img src="https://user-images.githubusercontent.com/62210/31511947-99df7488-af46-11e7-8580-f1e5eed44743.png"></p>
+
 ## Start App
 
 1. Clone this repo
