@@ -37,18 +37,17 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
             },
             methods: {
                 ConfigureEventHandlers: function () {
-                    jQuery("#captureFilterInput").on("keypress", function (e, args) {
-                        if (e.keyCode === 13) {
-                            if (Widgetoko.RendererProcess.MainForm._isStarted) {
-                                Electron.ipcRenderer.send("cmd-stop-capture");
+                    jQuery("#captureFilterInput").on("input", function (e, args) {
+                        if (Widgetoko.RendererProcess.MainForm._isStarted) {
+                            Electron.ipcRenderer.send("cmd-stop-capture");
+                        }
 
-                                // Let "stop" event be processed first:
-                                setTimeout(function (ev) {
-                                    Electron.ipcRenderer.send("cmd-start-capture");
-                                }, 1000);
-                            } else {
-                                Electron.ipcRenderer.send("cmd-start-capture");
-                            }
+                        return null;
+                    });
+
+                    jQuery("#captureFilterInput").on("keypress", function (e, args) {
+                        if (e.keyCode === 13 && !Widgetoko.RendererProcess.MainForm._isStarted) {
+                            Electron.ipcRenderer.send("cmd-start-capture");
                         }
 
                         return null;

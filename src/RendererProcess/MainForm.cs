@@ -45,24 +45,21 @@ namespace Widgetoko.RendererProcess
 
         private static void ConfigureEventHandlers()
         {
+            jquery.jQuery.select("#captureFilterInput").on("input", (e, args) =>
+            {
+                if (_isStarted)
+                {
+                    Electron.ipcRenderer.send(Constants.IPC.StopCapture);
+                }
+
+                return null;
+            });
+
             jquery.jQuery.select("#captureFilterInput").on("keypress", (e, args) =>
             {
-                if (e.keyCode == 13)
+                if (e.keyCode == 13 && !_isStarted)
                 {
-                    if (_isStarted)
-                    {
-                        Electron.ipcRenderer.send(Constants.IPC.StopCapture);
-
-                        // Let "stop" event be processed first:
-                        dom.setTimeout(ev =>
-                        {
-                            Electron.ipcRenderer.send(Constants.IPC.StartCapture);
-                        }, 1000);
-                    }
-                    else
-                    {
-                        Electron.ipcRenderer.send(Constants.IPC.StartCapture);
-                    }
+                    Electron.ipcRenderer.send(Constants.IPC.StartCapture);
                 }
 
                 return null;
