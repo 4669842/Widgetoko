@@ -2,7 +2,9 @@
   "name": "widgetoko",
   "productName": "Widgetoko",
   "version": "1.0.0",
-  "description": "Widgetoko: Tweet Catcher",
+  "description": "Widgetoko: Built with C# and Bridge.NET",
+  "homepage": "https://github.com/bridgedotnet/Widgetoko",
+  "license": "Apache-2.0",
   "main": "App.js",
   "author": "Object.NET, Inc.",
   "repository": "https://github.com/bridgedotnet/Widgetoko/",
@@ -26,9 +28,8 @@
     "dist": "electron-builder"
   },
   "build": {
-   "appId": "Widgetoko",
-   "mac": {
-     "category": "your.app.category.type"
-   }
+   "appId": "com.electron.Widgetoko",
+   "productName": "Widgetoko",
+   "copyright": "Copyright © 2017 Object.NET, Inc."
  }
 }
