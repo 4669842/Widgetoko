@@ -12,14 +12,23 @@
   },
   "devDependencies": {
     "electron": "^1.7.6",
+    "electron-builder": "^19.37.2",
     "electron-packager": "^9.1.0",
     "npm-run-all": "^4.0.2"
   },
   "scripts": {
     "start": "electron .",
     "package": "npm-run-all package:*",
-    "package:mac":    "electron-packager . --electron-version=1.7.6 --overwrite --platform=darwin --arch=x64  --out=build --icon=Assets/Images/app_icon_32.png",
-    "package:win":    "electron-packager . --electron-version=1.7.6 --overwrite --platform=win32  --arch=ia32 --out=build --icon=Assets/Images/app_icon_32.png",
-    "package:linux":  "electron-packager . --electron-version=1.7.6 --overwrite --platform=linux  --arch=x64  --out=build"
-  }
+    "package:mac": "electron-packager . --electron-version=1.7.6 --overwrite --platform=darwin --arch=x64  --out=dist --icon=Assets/Images/app_icon_32.png",
+    "package:win": "electron-packager . --electron-version=1.7.6 --overwrite --platform=win32  --arch=ia32 --out=dist --icon=Assets/Images/app_icon_32.png",
+    "package:linux": "electron-packager . --electron-version=1.7.6 --overwrite --platform=linux  --arch=x64  --out=dist",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "build": {
+   "appId": "Widgetoko",
+   "mac": {
+     "category": "your.app.category.type"
+   }
+ }
 }
