@@ -28,8 +28,8 @@
     "dist": "electron-builder"
   },
   "build": {
-   "appId": "com.electron.Widgetoko",
-   "productName": "Widgetoko",
-   "copyright": "Copyright © 2017 Object.NET, Inc."
- }
+    "appId": "com.electron.Widgetoko",
+    "productName": "Widgetoko",
+    "copyright": "Copyright © 2017 Object.NET, Inc."
+  }
 }
