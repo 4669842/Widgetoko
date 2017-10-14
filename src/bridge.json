@@ -1,6 +1,6 @@
 {
   // The folder to output JavaScript (.js) files.
-  "output": "App/",
+  "output": "../dist/",
 
   "outputBy": "Class",
 
