@@ -18,8 +18,8 @@
   "scripts": {
     "start": "electron .",
     "package": "npm-run-all package:*",
-    "package:mac": "electron-packager . --electron-version=1.7.6 --overwrite --platform=darwin --arch=x64 --out=../../dist --icon=Assets/Images/app_icon_32.png",
-    "package:win": "electron-packager . --electron-version=1.7.6 --overwrite --platform=win32 --arch=ia32 --out=../../dist --icon=Assets/Images/app_icon_32.png",
-    "package:linux": "electron-packager . --electron-version=1.7.6 --overwrite --platform=linux --arch=x64 --out=../../dist"
+    "package:mac":    "electron-packager . --electron-version=1.7.6 --overwrite --platform=darwin --arch=x64  --out=build --icon=Assets/Images/app_icon_32.png",
+    "package:win":    "electron-packager . --electron-version=1.7.6 --overwrite --platform=win32  --arch=ia32 --out=build --icon=Assets/Images/app_icon_32.png",
+    "package:linux":  "electron-packager . --electron-version=1.7.6 --overwrite --platform=linux  --arch=x64  --out=build"
   }
 }
