@@ -6,11 +6,22 @@ Widgetoko enables users to connect to Twitter and watch tweets arrive in real-ti
 
 <p align="center"><img src="https://user-images.githubusercontent.com/62210/31524623-2c2e3906-af78-11e7-9e00-4df7227fa219.png"></p>
 
-## Build Requirements
+There are several options for installing Widgetoko. Packaged installers are available as .exe (Win) and .dmg (Mac), or you can build the project from the original source code.
+
+## Installers
+
+Platform | Version | Installer
+---- | ---- | ----
+Win | 1.0.0 | [Widgetoko.exe](https://github.com/bridgedotnet/Archives/raw/master/Widgetoko/1.0.0/Widgetoko.exe)
+Mac | 1.0.0 | [Widgetoko.dmg](https://github.com/bridgedotnet/Archives/raw/master/Widgetoko/1.0.0/Widgetoko.dmg)
+
+## Build from source
+
+### Requirements
 
 1. Install [Yarn](https://yarnpkg.com)
 
-## Start App
+### Start
 
 1. Clone this repo
 1. Using the **Command** (Win) or **Terminal** (Mac), browse to the `/dist` directory
@@ -56,9 +67,9 @@ Your tokens will be saved in **%appdata%/widgetoko/UserSettings.json** in an obf
 - Replace the **Options** form with empty values, then click **Save** to overwrite your old token values.
 - Invalidate the tokens from the Twitter [app configuration](https://apps.twitter.com/app/), or just delete the app from Twitter.
 
-## Installers
+## Build Installers
 
-Creating an actual installer is very simple. To create the installer, use the following steps:
+Creating an actual installer for the Widgetoko app is very simple. To create the installer, use the following steps:
 
 1. Clone this repo (if you have not done so already)
 1. With a **Command Window** (Windows) or **Terminal** (Mac), browse to the `/dist` directory
@@ -69,6 +80,6 @@ yarn install
 yarn build
 ```
 
-Installers can be created for Mac, Windows, and Linux. The installer creating process should take no more than a few minutes, but needs to be run on each platform you support. If you want an .exe for Windows, run the command on a Windows machine. Need a Mac installer? run the command on a Mac. 
+Installers can be created for Mac, Windows, and Linux. The installer creation process should take no more than a few minutes, but needs to be run on each platform you support. If you want an .exe for Windows, run the command on a Windows machine. Need a Mac installer? run the command on a Mac. 
 
 The installer files, such as .exe (Win) and .dmg (Mac), will be added to the **/dist/installers/** folder and those files can be deployed to your users.
