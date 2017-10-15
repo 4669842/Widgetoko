@@ -262,6 +262,8 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         Electron.shell.openExternal("http://bridge.net/");
                     } }, { label: "Visit Retyped", click: function () {
                         Electron.shell.openExternal("https://retyped.com/");
+                    } }, { label: "Visit Widgetoko", click: function () {
+                        Electron.shell.openExternal("https://github.com/bridgedotnet/Widgetoko");
                     } }, { type: "separator" }, { label: "Visit Electron API Demos", click: function () {
                         Electron.shell.openExternal("https://github.com/electron/electron-api-demos");
                     } }, { label: "Visit Twitter API Reference", click: function () {

@@ -489,6 +489,11 @@ namespace Widgetoko.MainProcess
                     },
                     new electron.Electron.MenuItemConstructorOptions
                     {
+                        label = "Visit Widgetoko",
+                        click = delegate { Electron.shell.openExternal("https://github.com/bridgedotnet/Widgetoko"); }
+                    },
+                    new electron.Electron.MenuItemConstructorOptions
+                    {
                         type = lit.separator
                     },
                     new electron.Electron.MenuItemConstructorOptions
