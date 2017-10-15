@@ -135,7 +135,7 @@ namespace Widgetoko.MainProcess
             var options = ObjectLiteral.Create<electron.Electron.BrowserWindowConstructorOptions>();
             options.width = 600;
             options.height = 400;
-            options.icon = node.path.join(node.__dirname, "Assets/Images/app_icon_32.png");
+            options.icon = node.path.join(node.__dirname, "assets/app-icon/png/32.png");
             options.title = Constants.AppTitle;
             options.frame = false;
             options.skipTaskbar = true;
@@ -153,7 +153,7 @@ namespace Widgetoko.MainProcess
             var options = ObjectLiteral.Create<electron.Electron.BrowserWindowConstructorOptions>();
             options.width = 600;
             options.height = 800;
-            options.icon = node.path.join(node.__dirname, "Assets/Images/app_icon_32.png");
+            options.icon = node.path.join(node.__dirname, "assets/app-icon/png/32.png");
             options.title = Constants.AppTitle;
             options.show = false;
 
@@ -185,7 +185,7 @@ namespace Widgetoko.MainProcess
             options.width = 440;
             options.height = 565;
             options.title = "Options";
-            options.icon = node.path.join(node.__dirname, "Assets/Images/app_icon_32.png");
+            options.icon = node.path.join(node.__dirname, "assets/app-icon/png/32.png");
             options.skipTaskbar = true;
             options.parent = Win;
             options.modal = true;
@@ -220,8 +220,8 @@ namespace Widgetoko.MainProcess
 
         private static void ShowTrayIcon()
         {
-            var icon16Path = node.path.join(node.__dirname, "Assets/Images/app_icon_16.png");
-            var icon32Path = node.path.join(node.__dirname, "Assets/Images/app_icon_32.png");
+            var icon16Path = node.path.join(node.__dirname, "assets/app-icon/png/16.png");
+            var icon32Path = node.path.join(node.__dirname, "assets/app-icon/png/32.png");
 
             Action showFn = () =>
             {
