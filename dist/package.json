@@ -25,11 +25,25 @@
     "package:win": "electron-packager . --electron-version=1.7.6 --overwrite --platform=win32  --arch=ia32 --out=dist --icon=Assets/Images/app_icon_32.png",
     "package:linux": "electron-packager . --electron-version=1.7.6 --overwrite --platform=linux  --arch=x64  --out=dist",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "build": "electron-builder"
   },
   "build": {
     "appId": "com.electron.Widgetoko",
     "productName": "Widgetoko",
-    "copyright": "Copyright © 2017 Object.NET, Inc."
+    "copyright": "Copyright © 2017 Object.NET, Inc.",
+    "directories": {
+      "output": "installers"
+    },
+    "win": {
+      "icon": "assets/app-icon/win/app.ico"
+    },
+    "mac": {
+      "category": "public.app-category.social-networking",
+      "icon": "assets/app-icon/mac/app.icns"
+    },
+    "dmg": {
+      "background": "assets/img/background.png",
+      "icon": "assets/app-icon/mac/app.icns"
+    }
   }
 }
