@@ -6,7 +6,7 @@ Widgetoko enables users to connect to Twitter and watch tweets arrive in real-ti
 
 <p align="center"><img src="https://user-images.githubusercontent.com/62210/31524623-2c2e3906-af78-11e7-9e00-4df7227fa219.png"></p>
 
-## Requirements
+## Build Requirements
 
 1. Install [Yarn](https://yarnpkg.com)
 
