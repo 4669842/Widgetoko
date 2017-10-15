@@ -8,20 +8,22 @@ Widgetoko enables users to connect to Twitter and watch tweets arrive in real-ti
 
 ## Requirements
 
-1. Install [Node.js](https://nodejs.org/en/)
+1. Install [Yarn](https://yarnpkg.com)
 
 ## Start App
 
 1. Clone this repo
-1. With a **Command Window** (Windows) or **Terminal** (Mac), browse to the `/dist` directory
-1. Run the following commands:
+1. Using the **Command** (Win) or **Terminal** (Mac), browse to the `/dist` directory
+1. Run the following `yarn` commands:
 
 ```
-npm install
-npm start
+yarn install
+yarn start
 ```
 
-Widgetoko should automatically start up. 
+Yarn will take a few minutes to download the required packages if this is your first time running `yarn install`. Just let the process run. 
+
+Once complete, run the command `yarn start` and Widgetoko should start up automatically.
 
 ## Configure Twitter Tokens
 
@@ -60,11 +62,11 @@ Creating an actual installer is very simple. To create the installer, use the fo
 
 1. Clone this repo (if you have not done so already)
 1. With a **Command Window** (Windows) or **Terminal** (Mac), browse to the `/dist` directory
-1. Run the following commands:
+1. Run the following `yarn` commands:
 
 ```
-npm install
-npm run-script build
+yarn install
+yarn build
 ```
 
 Installers can be created for Mac, Windows, and Linux. The installer creating process should take no more than a few minutes, but needs to be run on each platform you support. If you want an .exe for Windows, run the command on a Windows machine. Need a Mac installer? run the command on a Mac. 
