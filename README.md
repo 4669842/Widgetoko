@@ -1,14 +1,19 @@
 # Widgetoko
 
-An Electron demonstration app written in C# using [Bridge](http://bridge.net) and [Retyped](https://retyped.com).
-The application allows to capture real-time tweets satisfying to a specified filter.
+An Electron and Node.js demonstration app written in C# and compiled to JavaScript using [Bridge](http://bridge.net) and [Retyped](https://retyped.com). 
+
+Widgetoko enables users to connect to Twitter and watch tweets arrive in real-time that match a specified search term.
 
 <p align="center"><img src="https://user-images.githubusercontent.com/62210/31524623-2c2e3906-af78-11e7-9e00-4df7227fa219.png"></p>
+
+## Requirements
+
+1. Install [Node.js](https://nodejs.org/en/)
 
 ## Start App
 
 1. Clone this repo
-1. With a Command Window or Terminal, browse to the `src/App` directory
+1. With a **Command Window** (Windows) or **Terminal** (Mac), browse to the `/dist` directory
 1. Run the following commands:
 
 ```
@@ -16,11 +21,11 @@ npm install
 npm start
 ```
 
-The Widgetoko app should automatically start up. 
+Widgetoko should automatically start up. 
 
 ## Configure Twitter Tokens
 
-Multiple connections to the Twitter Stream API are required, so we must register the Widgetoko app with Twitter and generate access tokens. This is a required step to tap into the Tweet stream.
+A connection to the Twitter Stream is required, so we must register the Widgetoko app with Twitter and generate Access Tokens. This is a required step to tap into the Tweet stream.
 
 1. Browse to https://apps.twitter.com/app/new
 
@@ -42,8 +47,26 @@ Multiple connections to the Twitter Stream API are required, so we must register
 
 <p align="center"><img src="https://user-images.githubusercontent.com/62210/31524622-2c17c1d0-af78-11e7-87ee-ef4add2af6ed.png"></p>
 
-**Security notice:**
+**Security Notice:**
+
 Your tokens will be saved in **%appdata%/widgetoko/UserSettings.json** in an obfuscated format. You have several options to remove tokens afterwards:
 - Just delete that file.
 - Replace the **Options** form with empty values, then click **Save** to overwrite your old token values.
 - Invalidate the tokens from the Twitter [app configuration](https://apps.twitter.com/app/), or just delete the app from Twitter.
+
+## Installers
+
+Creating an actual installer is very simple. To create the installer, use the following steps:
+
+1. Clone this repo (if you have not done so already)
+1. With a **Command Window** (Windows) or **Terminal** (Mac), browse to the `/dist` directory
+1. Run the following commands:
+
+```
+npm install
+npm run-script build
+```
+
+Installers can be created for Mac, Windows, and Linux. The installer creating process should take no more than a few minutes, but needs to be run on each platform you support. If you want an .exe for Windows, run the command on a Windows machine. Need a Mac installer? run the command on a Mac. 
+
+The installer files, such as .exe (Win) and .dmg (Mac), will be added to the **/dist/installers/** folder and those files can be deployed to your users.
