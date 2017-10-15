@@ -11,8 +11,8 @@ namespace Widgetoko.RendererProcess
         private const int MaxTweetsOnPage = 20;
         private const int NotificationBufferTimeSec = 10;
 
-        private const string LightThemeCss = "../Assets/Styles/light.css";
-        private const string DarkThemeCss = "../Assets/Styles/dark.css";
+        private const string LightThemeCss = "../assets/css/light.css";
+        private const string DarkThemeCss = "../assets/css/dark.css";
 
         [Init(InitPosition.Top)]
         public static void InitGlobals()

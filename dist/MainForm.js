@@ -31,8 +31,8 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                 init: function () {
                     this.MaxTweetsOnPage = 20;
                     this.NotificationBufferTimeSec = 10;
-                    this.LightThemeCss = "../Assets/Styles/light.css";
-                    this.DarkThemeCss = "../Assets/Styles/dark.css";
+                    this.LightThemeCss = "../assets/css/light.css";
+                    this.DarkThemeCss = "../assets/css/dark.css";
                 }
             },
             methods: {
