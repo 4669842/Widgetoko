@@ -120,7 +120,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
 
                     // Create the browser window.
                     var splash = new Electron.BrowserWindow(options);
-                    Widgetoko.MainProcess.App.LoadWindow(splash, "Forms/SplashScreen.html");
+                    Widgetoko.MainProcess.App.LoadWindow(splash, "forms/SplashScreen.html");
 
                     return splash;
                 },
@@ -138,7 +138,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
 
                     Widgetoko.MainProcess.App.SetMainMenu();
 
-                    Widgetoko.MainProcess.App.LoadWindow(win, "Forms/MainForm.html");
+                    Widgetoko.MainProcess.App.LoadWindow(win, "forms/MainForm.html");
 
                     win.on("closed", function () {
                         // Dereference the window object, usually you would store windows
@@ -171,7 +171,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                     optionsWin.setMenu(null);
                     Widgetoko.MainProcess.App.SetContextMenu(optionsWin);
 
-                    Widgetoko.MainProcess.App.LoadWindow(optionsWin, "Forms/OptionsForm.html");
+                    Widgetoko.MainProcess.App.LoadWindow(optionsWin, "forms/OptionsForm.html");
 
                     return optionsWin;
                 },

@@ -143,7 +143,7 @@ namespace Widgetoko.MainProcess
 
             // Create the browser window.
             var splash = new electron.Electron.BrowserWindow(options);
-            App.LoadWindow(splash, "Forms/SplashScreen.html");
+            App.LoadWindow(splash, "forms/SplashScreen.html");
 
             return splash;
         }
@@ -163,7 +163,7 @@ namespace Widgetoko.MainProcess
 
             App.SetMainMenu();
 
-            App.LoadWindow(Win, "Forms/MainForm.html");
+            App.LoadWindow(Win, "forms/MainForm.html");
 
             Win.on(lit.closed, () =>
             {
@@ -200,7 +200,7 @@ namespace Widgetoko.MainProcess
             optionsWin.setMenu(null);
             SetContextMenu(optionsWin);
 
-            App.LoadWindow(optionsWin, "Forms/OptionsForm.html");
+            App.LoadWindow(optionsWin, "forms/OptionsForm.html");
 
             return optionsWin;
         }
