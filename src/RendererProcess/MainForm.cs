@@ -152,6 +152,7 @@ namespace Widgetoko.RendererProcess
             // Configure handlers for the created listener events:
             listener.OnReceived += (sender, tweet) =>
             {
+                jquery.jQuery.select("#placeholder").hide();
                 AddTweetToPage(tweet);
 
                 // Notify about the obtained tweet:

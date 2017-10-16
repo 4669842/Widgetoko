@@ -120,6 +120,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
 
                     // Configure handlers for the created listener events:
                     listener.addOnReceived(function (sender, tweet) {
+                        jQuery("#placeholder").hide();
                         Widgetoko.RendererProcess.MainForm.AddTweetToPage(tweet);
 
                         // Notify about the obtained tweet:
