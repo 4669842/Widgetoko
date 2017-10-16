@@ -205,10 +205,10 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
 
                     var captureMenuItem = { label: "Capture", submenu: System.Array.init([{ label: "Start", click: function () {
                         win.webContents.send("cmd-start-capture");
-                        Widgetoko.MainProcess.App.ToggleStartStopMenuItems();
+                        Widgetoko.MainProcess.App.ToggleStartStopMenuItems(true);
                     } }, { label: "Stop", enabled: false, click: function () {
                         win.webContents.send("cmd-stop-capture");
-                        Widgetoko.MainProcess.App.ToggleStartStopMenuItems();
+                        Widgetoko.MainProcess.App.ToggleStartStopMenuItems(false);
                     } }], System.Object) };
 
                     var visitMenuItem = { label: "Visit Bridge.NET", click: function () {
@@ -273,7 +273,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         msgBoxOpts.type = "info";
                         msgBoxOpts.title = "About";
                         msgBoxOpts.buttons = System.Array.init(["OK"], System.String);
-                        msgBoxOpts.message = System.String.concat(System.String.concat("Widgetoko.\r\n\r\nNode: " + (process.versions.node || "") + "\r\nChrome: ", process.versions.chrome) + "\r\nElectron: ", process.versions.electron);
+                        msgBoxOpts.message = System.String.concat(System.String.concat("Widgetoko.\n\nNode: " + (process.versions.node || "") + "\nChrome: ", process.versions.chrome) + "\nElectron: ", process.versions.electron);
 
                         Electron.dialog.showMessageBox(msgBoxOpts);
                     } }], System.Object) };
@@ -324,9 +324,9 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                 },
                 ToggleStartStop: function (isStart) {
                     win.webContents.send(isStart ? "cmd-start-capture" : "cmd-stop-capture");
-                    Widgetoko.MainProcess.App.ToggleStartStopMenuItems();
+                    Widgetoko.MainProcess.App.ToggleStartStopMenuItems(isStart);
                 },
-                ToggleStartStopMenuItems: function () {
+                ToggleStartStopMenuItems: function (isStarted) {
                     var appMenu = Electron.Menu.getApplicationMenu();
                     var captureMenu = System.Linq.Enumerable.from(appMenu.items).first(function (x) {
                             return Bridge.referenceEquals(x.label, "Capture");
@@ -338,10 +338,9 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                     var stopMenuItem = System.Linq.Enumerable.from(captureMenu.items).first(function (x) {
                             return Bridge.referenceEquals(x.label, "Stop");
                         });
-                    var isStarted = !startMenuItem.enabled;
 
-                    startMenuItem.enabled = isStarted;
-                    stopMenuItem.enabled = !isStarted;
+                    startMenuItem.enabled = !isStarted;
+                    stopMenuItem.enabled = isStarted;
 
                     if (Widgetoko.MainProcess.App.AppIcon != null && Widgetoko.MainProcess.App.ContextMenu != null) {
                         var captureCtxMenu = System.Linq.Enumerable.from(Widgetoko.MainProcess.App.ContextMenu.items).first(function (x) {
@@ -355,11 +354,11 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                                 return Bridge.referenceEquals(x.label, "Stop");
                             });
 
-                        startMenuCtxItem.enabled = isStarted;
-                        stopMenuCtxItem.enabled = !isStarted;
+                        startMenuCtxItem.enabled = !isStarted;
+                        stopMenuCtxItem.enabled = isStarted;
                     }
 
-                    win.setTitle(System.String.format("{0} ({1})", "Widgetoko", (isStarted ? "Stopped" : "Running")));
+                    win.setTitle(System.String.format("{0} ({1})", "Widgetoko", (isStarted ? "Running" : "Stopped")));
                 },
                 LoadUserSettings: function () {
                     var userDataPath = Electron.app.getPath("userData");

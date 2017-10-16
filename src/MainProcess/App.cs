@@ -251,7 +251,7 @@ namespace Widgetoko.MainProcess
                         click = delegate
                         {
                             Win.webContents.send(Constants.IPC.StartCapture);
-                            App.ToggleStartStopMenuItems();
+                            App.ToggleStartStopMenuItems(true);
                         }
                     },
                     new electron.Electron.MenuItemConstructorOptions
@@ -261,7 +261,7 @@ namespace Widgetoko.MainProcess
                         click = delegate
                         {
                             Win.webContents.send(Constants.IPC.StopCapture);
-                            App.ToggleStartStopMenuItems();
+                            App.ToggleStartStopMenuItems(false);
                         }
                     }
                 }
@@ -748,10 +748,10 @@ Electron: " + node.process.versions["electron"];
         private static void ToggleStartStop(bool isStart)
         {
             Win.webContents.send(isStart ? Constants.IPC.StartCapture : Constants.IPC.StopCapture);
-            App.ToggleStartStopMenuItems();
+            App.ToggleStartStopMenuItems(isStart);
         }
 
-        private static void ToggleStartStopMenuItems()
+        private static void ToggleStartStopMenuItems(bool isStarted)
         {
             var appMenu = electron.Electron.Menu.getApplicationMenu();
             var captureMenu = appMenu.items
@@ -761,10 +761,9 @@ Electron: " + node.process.versions["electron"];
 
             var startMenuItem = captureMenu.items.First(x => x.label == "Start");
             var stopMenuItem = captureMenu.items.First(x => x.label == "Stop");
-            var isStarted = !startMenuItem.enabled;
 
-            startMenuItem.enabled = isStarted;
-            stopMenuItem.enabled = !isStarted;
+            startMenuItem.enabled = !isStarted;
+            stopMenuItem.enabled = isStarted;
 
             if (AppIcon != null && ContextMenu != null)
             {
@@ -776,11 +775,11 @@ Electron: " + node.process.versions["electron"];
                 var startMenuCtxItem = captureCtxMenu.items.First(x => x.label == "Start");
                 var stopMenuCtxItem = captureCtxMenu.items.First(x => x.label == "Stop");
 
-                startMenuCtxItem.enabled = isStarted;
-                stopMenuCtxItem.enabled = !isStarted;
+                startMenuCtxItem.enabled = !isStarted;
+                stopMenuCtxItem.enabled = isStarted;
             }
 
-            Win.setTitle($"{Constants.AppTitle} ({(isStarted ? "Stopped" : "Running")})");
+            Win.setTitle($"{Constants.AppTitle} ({(isStarted ? "Running" : "Stopped")})");
         }
 
         private static void LoadUserSettings()
