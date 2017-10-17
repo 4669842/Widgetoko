@@ -1,12 +1,16 @@
 # Widgetoko
 
-An Electron and Node.js demonstration app written in C# and compiled to JavaScript using [Bridge](http://bridge.net) and [Retyped](https://retyped.com). 
+A Node.js and Electron demonstration app written in C# then compiled to JavaScript using [Bridge](http://bridge.net) and [Retyped](https://retyped.com). 
 
 Widgetoko enables users to connect to Twitter and watch tweets arrive in real-time that match a specified search term.
 
 <p align="center"><img src="https://user-images.githubusercontent.com/62210/31524623-2c2e3906-af78-11e7-9e00-4df7227fa219.png"></p>
 
 There are several options for installing Widgetoko. Packaged installers are available as .exe (Win) and .dmg (Mac), or you can build the project from the original source code.
+
+## Introduction
+
+[![Video Tutorial](https://user-images.githubusercontent.com/62210/31647625-8def053e-b2c6-11e7-80ad-5164f26fcbd8.png)](https://www.youtube.com/watch?v=qar056MgI5Q)
 
 ## Installers
 
