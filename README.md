@@ -27,7 +27,7 @@ Mac | 1.0.0 | [Widgetoko.dmg](https://github.com/bridgedotnet/Archives/raw/maste
 
 ### Start
 
-1. Clone the [Widgetoko](https://github.com/bridgedotnet/Widgetoko) repo or [download](https://github.com/bridgedotnet/Widgetoko/archive/master.zip) source
+1. Clone the [Widgetoko](https://github.com/bridgedotnet/Widgetoko) repo or download [source](https://github.com/bridgedotnet/Widgetoko/archive/master.zip)
 1. Using the **Command** (Win) or **Terminal** (Mac), browse to the `/dist` directory
 1. Run the following `yarn` command:
 
@@ -45,29 +45,23 @@ yarn start
 
 ### Compile C# source
 
-The above steps will run the previously compiled JavaScript files within the `/dist` output folder, but it's also very easy to fully recompile the original C# source code in order to regenerate the JavaScript files.
-
-The Widgetoko C# source code can be easily compiled by opening the solution in Visual Stduio, then 
+The above steps will run the previously released JavaScript files, but it is also very easy to fully recompile the original C# source code in Visual Studio.
 
 1. Double click the `/src/Widgetoko.sln` file to open in Visual Studio
-2. Select `Build` > `Rebuild Solution` from the main Visual Studio menu
+1. Select `Build` > `Rebuild Solution` from the main Visual Studio menu
+1. Run the command `yarn install` (if you have not done so earlier)
 
-Before you can run the app, please ensure you have run the following two `yarn` command. Run the first, and when complete, run the second. 
+You can then start an instance of the Widgetoko app by running the command `yarn start`. 
 
-```
-yarn install
-yarn start
-```
-
-It is also possible to start Widgetoko directly from Visual Studio by clicking the **Start** button or hitting <kbd>F5</kbd> or <kbd>Ctrl</kbd> + <kbd>F5</kbd>, BUT FIRST... there two Project Properties that need to be set (see image below).
+It is also possible to start Widgetoko directly from Visual Studio by clicking the **Start** button or hitting <kbd>F5</kbd> or <kbd>Ctrl + F5</kbd>, _BUT FIRST_... there are two Project Properties that need to be set (see image below).
 
 1. Right-click on the Widgetoko Project in the Solution, and select **Properties**
 2. Under the **Debug** tab, select **Start external program** and paste the value `..\dist\node_modules\electron\dist\electron.exe`
-3. In the **Command line arguments** field, paste the value `../../../dists`
+3. In the **Command line arguments** field, paste the value `../../../dist`
 
 Now the **Start** button will work as expected and the Widgetoko app will launch.
 
-![configure-project-properties](https://user-images.githubusercontent.com/62210/31650575-2f3ec39e-b2d5-11e7-9b53-dc115179b8b4.png)
+![Configure Project Properties](https://user-images.githubusercontent.com/62210/31652013-ece1a286-b2da-11e7-9d19-6f6c34dbb6d5.png)
 
 ## Configure Twitter Tokens
 
