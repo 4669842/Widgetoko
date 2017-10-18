@@ -10,7 +10,7 @@ There are several options for installing Widgetoko. Packaged installers are avai
 
 ## Introduction
 
-[![Video Tutorial](https://user-images.githubusercontent.com/62210/31647625-8def053e-b2c6-11e7-80ad-5164f26fcbd8.png)](https://www.youtube.com/watch?v=qar056MgI5Q)
+[![Video Tutorial](https://user-images.githubusercontent.com/62210/31647625-8def053e-b2c6-11e7-80ad-5164f26fcbd8.png)](http://www.youtube.com/watch?v=5nL_WlEPHXU)
 
 ## Installers
 
