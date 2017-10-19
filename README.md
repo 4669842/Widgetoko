@@ -45,7 +45,7 @@ yarn start
 
 ### Compile C# source
 
-The above steps will run the previously released JavaScript files, but it is also very easy to fully recompile the original C# source code in Visual Studio.
+The above steps will run the previously released JavaScript files in the `/dist` folder, but it's also very easy to fully recompile the original C# source code in Visual Studio to refresh the JavaScript output files.
 
 1. Double click the `/src/Widgetoko.sln` file to open in Visual Studio
 1. Select `Build` > `Rebuild Solution` from the main Visual Studio menu
