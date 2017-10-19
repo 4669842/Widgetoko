@@ -1,4 +1,4 @@
-# Widgetoko
+![logo-horz](https://user-images.githubusercontent.com/62210/31794676-57e6886a-b4e0-11e7-8525-b411584915d1.png)
 
 A Node.js and Electron demonstration app written in C# then compiled to JavaScript using [Bridge](http://bridge.net) and [Retyped](https://retyped.com). 
 
