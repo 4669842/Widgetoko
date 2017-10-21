@@ -1,10 +1,12 @@
 <p align="center"><img src="https://user-images.githubusercontent.com/62210/31794676-57e6886a-b4e0-11e7-8525-b411584915d1.png"></p>
 
-A Node.js and Electron demonstration app written in C# then compiled to JavaScript using [Bridge](http://bridge.net) and [Retyped](https://retyped.com). 
+A Node.js and Electron demonstration app written in C# then compiled to JavaScript using [Bridge](http://bridge.net) and [Retyped](https://retyped.com).
 
-Widgetoko enables users to connect to Twitter and watch tweets arrive in real-time that match a specified search term.
+Check out the **Widgetoko** announcement [blog post](https://blog.bridge.net/widgetoko-a-node-js-and-electron-application-written-in-c-1a2be480e4f9).
 
-<p align="center"><img src="https://user-images.githubusercontent.com/62210/31524623-2c2e3906-af78-11e7-9e00-4df7227fa219.png"></p>
+**Widgetoko** enables users to connect to Twitter and watch tweets arrive in real-time that match a specified search term.
+
+<p align="center"><img src="https://user-images.githubusercontent.com/62210/31847993-d3c3cac4-b5e4-11e7-8821-cea0156bcd3d.gif"></p>
 
 There are several options for installing Widgetoko. Packaged installers are available as .exe (Win) and .dmg (Mac), or you can build the project from the original source code.
 
