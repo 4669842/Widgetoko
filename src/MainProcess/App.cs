@@ -3,7 +3,7 @@ using System.Linq;
 using Bridge;
 using Retyped;
 using Widgetoko.Twitter;
-using Platform = Retyped.node.Literals.Options.Platform;
+using Platform = Retyped.node.NodeJS.Platform;
 using lit = Retyped.electron.Literals;
 
 namespace Widgetoko.MainProcess

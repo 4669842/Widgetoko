@@ -1,7 +1,7 @@
 /**
- * @version   : 16.3.2 - Bridge.NET
+ * @version   : 16.6.1 - Bridge.NET
  * @author    : Object.NET, Inc. http://bridge.net/
- * @copyright : Copyright 2008-2017 Object.NET, Inc. http://object.net/
+ * @copyright : Copyright 2008-2018 Object.NET, Inc. http://object.net/
  * @license   : See license.txt and https://github.com/bridgedotnet/Bridge/blob/master/LICENSE.md
  */
 
@@ -98,7 +98,6 @@
             }
 
             if (Bridge.isArray(o)) {
-                var arr = [];
                 for (var i = 0; i < o.length; i++) {
                     var item = o[i];
 
@@ -113,9 +112,8 @@
                         item = item.$clone();
                     }
 
-                    arr[i] = item;
+                    o[i] = item;
                 }
-                o = arr;
             }
 
             if (o && !noclone && o.$clone) {
@@ -411,7 +409,7 @@
 
             var name;
 
-            if (Bridge.isFunction(obj[name = "System$ICloneable$clone"])) {
+            if (Bridge.isFunction(Bridge.getProperty(obj, name = "System$ICloneable$clone"))) {
                 return obj[name]();
             }
 
@@ -485,7 +483,10 @@
             if (typeof Bridge.global.jQuery !== "undefined") {
                 Bridge.global.jQuery(delayfn);
             } else {
-                if (typeof Bridge.global.document === "undefined" || Bridge.global.document.readyState === "complete" || Bridge.global.document.readyState === "loaded") {
+                if (typeof Bridge.global.document === "undefined" ||
+                    Bridge.global.document.readyState === "complete" ||
+                    Bridge.global.document.readyState === "loaded" ||
+                    Bridge.global.document.readyState === "interactive") {
                     delayfn();
                 } else {
                     Bridge.on("DOMContentLoaded", Bridge.global.document, delayfn);
@@ -761,7 +762,7 @@
                 obj = Bridge.unbox(obj, true);
             }
 
-            var ctor = Bridge.Reflection.convertType(obj.constructor);
+            var ctor = obj.constructor === Object && obj.$getType ? obj.$getType() : Bridge.Reflection.convertType(obj.constructor);
             if (type.constructor === Function && obj instanceof type || ctor === type || Bridge.isObject(type)) {
                 return true;
             }
@@ -871,6 +872,24 @@
             }
 
             return obj;
+        },
+
+        copyProperties: function (to, from) {
+            var names = Bridge.getPropertyNames(from, false),
+                i;
+
+            for (i = 0; i < names.length; i++) {
+                var name = names[i],
+                    own = from.hasOwnProperty(name),
+                    dcount = name.split("$").length;
+
+                if (own && (dcount === 1 || dcount === 2 && name.match("\$\d+$"))) {
+                    to[name] = from[name];
+                }
+
+            }
+
+            return to;
         },
 
         merge: function (to, from, callback, elemFactory) {
@@ -1029,15 +1048,15 @@
 
             var name;
 
-            if (T && Bridge.isFunction(obj[name = "System$Collections$Generic$IEnumerable$1$" + Bridge.getTypeAlias(T) + "$getEnumerator"])) {
+            if (T && Bridge.isFunction(Bridge.getProperty(obj, name = "System$Collections$Generic$IEnumerable$1$" + Bridge.getTypeAlias(T) + "$getEnumerator"))) {
                 return obj[name]();
             }
 
-            if (T && Bridge.isFunction(obj[name = "System$Collections$Generic$IEnumerable$1$getEnumerator"])) {
+            if (T && Bridge.isFunction(Bridge.getProperty(obj, name = "System$Collections$Generic$IEnumerable$1$getEnumerator"))) {
                 return obj[name]();
             }
 
-            if (Bridge.isFunction(obj[name = "System$Collections$IEnumerable$getEnumerator"])) {
+            if (Bridge.isFunction(Bridge.getProperty(obj, name = "System$Collections$IEnumerable$getEnumerator"))) {
                 return obj[name]();
             }
 
@@ -1064,6 +1083,29 @@
             }
 
             return names;
+        },
+
+        getProperty: function (obj, propertyName) {
+            if(Bridge.isHtmlAttributeCollection(obj) && !this.isValidHtmlAttributeName(propertyName)) {
+                return undefined;
+            }
+
+            return obj[propertyName];
+        },
+
+        isValidHtmlAttributeName : function (name) {
+            // https://html.spec.whatwg.org/multipage/syntax.html#attributes-2
+
+            if (!name || !name.length) {
+                return false;
+            }
+
+            var r = /^[a-zA-Z_][\w\-]*$/;
+            return r.test(name);
+        },
+
+        isHtmlAttributeCollection: function (obj) {
+            return typeof obj !== "undefined" && (Object.prototype.toString.call(obj) === "[object NamedNodeMap]");
         },
 
         isDefined: function (value, noNull) {
@@ -1117,7 +1159,7 @@
         },
 
         isDate: function (obj) {
-            return Object.prototype.toString.call(obj) === "[object Date]";
+            return obj instanceof Date;
         },
 
         isNull: function (value) {
@@ -1169,45 +1211,58 @@
                 return true;
             }
 
-            if (a && a.$boxed && a.type.equals && a.type.equals.length === 2) {
-                return a.type.equals(a, b);
+            var guardItem = Bridge.$equalsGuard[Bridge.$equalsGuard.length - 1];
+            if (guardItem && guardItem.a === a && guardItem.b === b) {
+                return a === b;
             }
 
-            if (b && b.$boxed && b.type.equals && b.type.equals.length === 2) {
-                return b.type.equals(b, a);
-            }
+            Bridge.$equalsGuard.push({a: a, b: b});
 
-            if (a && Bridge.isFunction(a.equals) && a.equals.length === 1) {
-                return a.equals(b);
-            }
-
-            if (b && Bridge.isFunction(b.equals) && b.equals.length === 1) {
-                return b.equals(a);
-            } if (Bridge.isFunction(a) && Bridge.isFunction(b)) {
-                return Bridge.fn.equals.call(a, b);
-            } else if (Bridge.isDate(a) && Bridge.isDate(b)) {
-                if (a.kind !== undefined && a.ticks !== undefined && b.kind !== undefined && b.ticks !== undefined) {
-                    return a.ticks.equals(b.ticks);
+            var fn = function (a, b) {
+                if (a && a.$boxed && a.type.equals && a.type.equals.length === 2) {
+                    return a.type.equals(a, b);
                 }
 
-                return a.valueOf() === b.valueOf();
-            } else if (Bridge.isNull(a) && Bridge.isNull(b)) {
-                return true;
-            } else if (Bridge.isNull(a) !== Bridge.isNull(b)) {
-                return false;
-            }
+                if (b && b.$boxed && b.type.equals && b.type.equals.length === 2) {
+                    return b.type.equals(b, a);
+                }
 
-            var eq = a === b;
+                if (a && Bridge.isFunction(a.equals) && a.equals.length === 1) {
+                    return a.equals(b);
+                }
 
-            if (!eq && typeof a === "object" && typeof b === "object" && a !== null && b !== null && a.$kind === "struct" && b.$kind === "struct" && a.$$name === b.$$name) {
-                return Bridge.getHashCode(a) === Bridge.getHashCode(b) && Bridge.objectEquals(a, b);
-            }
+                if (b && Bridge.isFunction(b.equals) && b.equals.length === 1) {
+                    return b.equals(a);
+                } if (Bridge.isFunction(a) && Bridge.isFunction(b)) {
+                    return Bridge.fn.equals.call(a, b);
+                } else if (Bridge.isDate(a) && Bridge.isDate(b)) {
+                    if (a.kind !== undefined && a.ticks !== undefined && b.kind !== undefined && b.ticks !== undefined) {
+                        return a.ticks.equals(b.ticks);
+                    }
 
-            if (!eq && a && b && a.hasOwnProperty("item1") && Bridge.isPlainObject(a) && b.hasOwnProperty("item1") && Bridge.isPlainObject(b)) {
-                return Bridge.objectEquals(a, b);
-            }
+                    return a.valueOf() === b.valueOf();
+                } else if (Bridge.isNull(a) && Bridge.isNull(b)) {
+                    return true;
+                } else if (Bridge.isNull(a) !== Bridge.isNull(b)) {
+                    return false;
+                }
 
-            return eq;
+                var eq = a === b;
+
+                if (!eq && typeof a === "object" && typeof b === "object" && a !== null && b !== null && a.$kind === "struct" && b.$kind === "struct" && a.$$name === b.$$name) {
+                    return Bridge.getHashCode(a) === Bridge.getHashCode(b) && Bridge.objectEquals(a, b);
+                }
+
+                if (!eq && a && b && a.hasOwnProperty("item1") && Bridge.isPlainObject(a) && b.hasOwnProperty("item1") && Bridge.isPlainObject(b)) {
+                    return Bridge.objectEquals(a, b);
+                }
+
+                return eq;
+            };
+
+            var result = fn(a, b);
+            Bridge.$equalsGuard.pop();
+            return result;
         },
 
         objectEquals: function (a, b) {
@@ -1328,15 +1383,15 @@
 
             var name;
 
-            if (T && Bridge.isFunction(a[name = "System$IComparable$1$" + Bridge.getTypeAlias(T) + "$compareTo"])) {
+            if (T && Bridge.isFunction(Bridge.getProperty(a, name = "System$IComparable$1$" + Bridge.getTypeAlias(T) + "$compareTo"))) {
                 return a[name](b);
             }
 
-            if (T && Bridge.isFunction(a[name = "System$IComparable$1$compareTo"])) {
+            if (T && Bridge.isFunction(Bridge.getProperty(a, name = "System$IComparable$1$compareTo"))) {
                 return a[name](b);
             }
 
-            if (Bridge.isFunction(a[name = "System$IComparable$compareTo"])) {
+            if (Bridge.isFunction(Bridge.getProperty(a, name = "System$IComparable$compareTo"))) {
                 return a[name](b);
             }
 
@@ -1344,15 +1399,15 @@
                 return a.compareTo(b);
             }
 
-            if (T && Bridge.isFunction(b[name = "System$IComparable$1$" + Bridge.getTypeAlias(T) + "$compareTo"])) {
+            if (T && Bridge.isFunction(Bridge.getProperty(b, name = "System$IComparable$1$" + Bridge.getTypeAlias(T) + "$compareTo"))) {
                 return -b[name](a);
             }
 
-            if (T && Bridge.isFunction(b[name = "System$IComparable$1$compareTo"])) {
+            if (T && Bridge.isFunction(Bridge.getProperty(b, name = "System$IComparable$1$compareTo"))) {
                 return -b[name](a);
             }
 
-            if (Bridge.isFunction(b[name = "System$IComparable$compareTo"])) {
+            if (Bridge.isFunction(Bridge.getProperty(b, name = "System$IComparable$compareTo"))) {
                 return -b[name](a);
             }
 
@@ -1390,11 +1445,11 @@
 
             var name;
 
-            if (T && a != null && Bridge.isFunction(a[name = "System$IEquatable$1$" + Bridge.getTypeAlias(T) + "$equalsT"])) {
+            if (T && a != null && Bridge.isFunction(Bridge.getProperty(a, name = "System$IEquatable$1$" + Bridge.getTypeAlias(T) + "$equalsT"))) {
                 return a[name](b);
             }
 
-            if (T && b != null && Bridge.isFunction(b[name = "System$IEquatable$1$" + Bridge.getTypeAlias(T) + "$equalsT"])) {
+            if (T && b != null && Bridge.isFunction(Bridge.getProperty(b, name = "System$IEquatable$1$" + Bridge.getTypeAlias(T) + "$equalsT"))) {
                 return b[name](a);
             }
 
@@ -1424,7 +1479,7 @@
 
             var name;
 
-            if (Bridge.isFunction(obj[name = "System$IFormattable$format"])) {
+            if (Bridge.isFunction(Bridge.getProperty(obj, name = "System$IFormattable$format"))) {
                 return obj[name](formatString, provider);
             }
 
@@ -1716,7 +1771,7 @@
                 };
 
                 fn.$invocationList = handlers ? Array.prototype.slice.call(handlers, 0) : [];
-                handlers = fn.$invocationList.slice();               
+                handlers = fn.$invocationList.slice();
 
                 return fn;
             },
@@ -1847,6 +1902,7 @@
 
     globals.Bridge = core;
     globals.Bridge.caller = [];
+    globals.Bridge.$equalsGuard = [];
 
     if (globals.console) {
         globals.Bridge.Console = globals.console;
@@ -2075,8 +2131,22 @@
                                     m = prototype[name];
                                 }
 
-                                scope[alias] = m;
-                                aliases.push({ fn: name, alias: alias });
+                                if (!Bridge.isFunction(m)) {
+                                    descriptor = {
+                                        get: function () {
+                                            return this[name];
+                                        },
+
+                                        set: function (value) {
+                                            this[name] = value;
+                                        }
+                                    };
+                                    Object.defineProperty(obj, alias, descriptor);
+                                    aliases.push({ alias: alias, descriptor: descriptor });
+                                } else {
+                                    scope[alias] = m;
+                                    aliases.push({ fn: name, alias: alias });
+                                }
                             }
                         }
                     })(statics ? scope : prototype, config.alias[i], config.alias[i + 1], cls);
@@ -2989,7 +3059,7 @@
 
     // @source ReflectionAssembly.js
 
-    Bridge.assembly = function (assemblyName, res, callback) {
+    Bridge.assembly = function (assemblyName, res, callback, restore) {
         if (!callback) {
             callback = res;
             res = {};
@@ -3005,6 +3075,7 @@
             Bridge.apply(asm.res, res || {});
         }
 
+        var oldAssembly = Bridge.$currentAssembly;
         Bridge.$currentAssembly = asm;
 
         if (callback) {
@@ -3017,6 +3088,10 @@
         }
 
         Bridge.init();
+
+        if (restore) {
+            Bridge.$currentAssembly = oldAssembly;
+        }
     };
 
     Bridge.define("System.Reflection.Assembly", {
@@ -3071,13 +3146,13 @@
         },
 
         getCustomAttributes: function (attributeType) {
-            if (attributeType && !Bridge.isBoolean(attributeType)) {
+            if (this.attr && attributeType && !Bridge.isBoolean(attributeType)) {
                 return this.attr.filter(function (a) {
                     return Bridge.is(a, attributeType);
                 });
             }
 
-            return this.attr;
+            return this.attr || [];
         }
     });
 
@@ -3090,7 +3165,7 @@
     // @source Object.js
 
     Bridge.define("System.Object", {
-        
+
     });
 
     Bridge.define("System.Void", {
@@ -3099,8 +3174,8 @@
     // @source systemAssemblyVersion.js
 
     Bridge.init(function () {
-        Bridge.SystemAssembly.version = "16.3.2";
-        Bridge.SystemAssembly.compiler = "16.3.2";
+        Bridge.SystemAssembly.version = "16.6.1";
+        Bridge.SystemAssembly.compiler = "16.6.1";
     });
 
     Bridge.define("Bridge.Utils.SystemAssemblyVersion");
@@ -3335,7 +3410,9 @@
                 pIndex = fullName.lastIndexOf('+', bIndex >= 0 ? bIndex : fullName.length),
                 nsIndex = pIndex > -1 ? pIndex : fullName.lastIndexOf('.', bIndex >= 0 ? bIndex : fullName.length);
 
-            return nsIndex > 0 ? (bIndex >= 0 ? fullName.substring(nsIndex + 1, bIndex) : fullName.substr(nsIndex + 1)) : fullName;
+            var name = nsIndex > 0 ? (bIndex >= 0 ? fullName.substring(nsIndex + 1, bIndex) : fullName.substr(nsIndex + 1)) : fullName;
+
+            return type.$isArray ? name + "[]" : name;
         },
 
         getTypeNamespace: function (type, name) {
@@ -4003,6 +4080,10 @@
             } else if (ci.sm) {
                 return ci.td[ci.sn].apply(null, args);
             } else {
+                if (ci.td.$literal) {
+                    return (ci.sn ? ci.td[ci.sn] : ci.td).apply(ci.td, args);
+                }
+
                 return Bridge.Reflection.applyConstructor(ci.sn ? ci.td[ci.sn] : ci.td, args);
             }
         },
@@ -5067,13 +5148,13 @@ Bridge.define("System.Exception", {
         getBaseException: function() {
             var inner = this.innerException;
             var back = this;
-            
+
             while (inner != null) {
                 back = inner;
                 inner = inner.innerException;
             }
-            
-            return back;  
+
+            return back;
         },
 
         toString: function () {
@@ -5084,11 +5165,11 @@ Bridge.define("System.Exception", {
             } else {
                 builder += "\n";
             }
-                
+
             if (this.StackTrace != null) {
                 builder += this.StackTrace + "\n";
             }
-                
+
             return builder;
         },
 
@@ -5238,7 +5319,7 @@ Bridge.define("System.Exception", {
                         return this.paramName;
                     }
                 }
-            }  
+            }
         },
 
         ctor: function (message, paramName, innerException) {
@@ -5505,7 +5586,7 @@ Bridge.define("System.Exception", {
                 back = back.InnerException;
                 backAsAggregate = Bridge.as(back, System.AggregateException);
             }
-            return back;  
+            return back;
         },
 
         flatten: function () {
@@ -8200,7 +8281,7 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
     };
 
     System.Decimal.prototype.equals = function (v) {
-        if (v instanceof System.Decimal) {
+        if (v instanceof System.Decimal || typeof v === "number") {
             return !this.compareTo(v);
         }
 
@@ -8510,7 +8591,7 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
                 bytes[i*4 + 4] = (d[i] >> 8) & 255;
                 bytes[i*4 + 5] = (d[i] >> 16) & 255;
                 bytes[i*4 + 6] = (d[i] >> 24) & 255;
-            }            
+            }
         }
         else {
             bytes[2] = 0;
@@ -8535,7 +8616,7 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
                 i = i + 4;
             }
         }
-        
+
         value.value.d = d;
 
         return value;
@@ -8616,7 +8697,14 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
             // Get the number of ticks since 0001-01-01T00:00:00.0000000 UTC
             getTicks: function (d) {
                 d.kind = (d.kind !== undefined) ? d.kind : 0
-                d.ticks = (d.ticks !== undefined) ? d.ticks : System.Int64(d.getTime() - d.getTimezoneOffset() * 60 * 1000).mul(10000).add(System.DateTime.minOffset);
+
+                if (d.ticks === undefined) {
+                    if (d.kind === 1) {
+                        d.ticks = System.Int64(d.getTime()).mul(10000).add(System.DateTime.minOffset);
+                    } else {
+                        d.ticks = System.Int64(d.getTime() - d.getTimezoneOffset() * 60 * 1000).mul(10000).add(System.DateTime.minOffset);
+                    }
+                }
 
                 return d.ticks;
             },
@@ -9064,6 +9152,12 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
                     }
 
                     throw new System.FormatException("String does not contain a valid string representation of a date and time.");
+                } else {
+                    // TODO: The code below assumes that there are no quotation marks around the UTC/Z format token (the format patterns
+                    // used by Bridge appear to use quotation marks throughout (see universalSortableDateTimePattern), including
+                    // in the recent Newtonsoft.Json.JsonConvert release).
+                    // Until the above is sorted out, manually remove quotation marks to get UTC times parsed correctly.
+                    format = format.replace("'Z'", "Z");
                 }
 
                 var now = new Date(),
@@ -9352,8 +9446,7 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
                         } else if (token === "Z") {
                             var ch = str.substring(idx, idx + 1);
                             if (ch === "Z" || ch === "z") {
-                                kind = 2;
-                                adjust = true;
+                                kind = 1;
                                 idx += 1;
                             }
                             else {
@@ -9651,6 +9744,7 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
                 var d1 = new Date(d.getTime() + Math.round(v));
 
                 d1.kind = d.kind;
+                d1.ticks = System.DateTime.getTicks(d1);
 
                 return d1;
             },
@@ -9665,6 +9759,7 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
                 var d1 = new Date(d.getTime() + value.ticks.div(10000).toNumber());
 
                 d1.kind = d.kind;
+                d1.ticks = System.DateTime.getTicks(d1);
 
                 return d1;
             },
@@ -9675,6 +9770,7 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
                 var d1 = new Date(d.getTime() - value.ticks.div(10000).toNumber());
 
                 d1.kind = d.kind;
+                d1.ticks = System.DateTime.getTicks(d1);
 
                 return d1;
             },
@@ -9690,11 +9786,19 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
             getDayOfYear: function (d) {
                 var ny = new Date(d.getTime());
 
-                ny.setMonth(0);
-                ny.setDate(1);
-                ny.setHours(0);
-                ny.setMinutes(0);
-                ny.setMilliseconds(0);
+                if (d.kind !== 1) {
+                    ny.setMonth(0);
+                    ny.setDate(1);
+                    ny.setHours(0);
+                    ny.setMinutes(0);
+                    ny.setMilliseconds(0);
+                } else {
+                    ny.setUTCMonth(0);
+                    ny.setUTCDate(1);
+                    ny.setUTCHours(0);
+                    ny.setUTCMinutes(0);
+                    ny.setUTCMilliseconds(0);
+                }
 
                 return Math.ceil((d - ny) / 864e5);
             },
@@ -9703,11 +9807,21 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
                 d.kind = (d.kind !== undefined) ? d.kind : 0
 
                 var d1 = new Date(d.getTime());
-                d1.setHours(0);
-                d1.setMinutes(0);
-                d1.setSeconds(0);
-                d1.setMilliseconds(0);
+
+                if (d.kind !== 1) {
+                    d1.setHours(0);
+                    d1.setMinutes(0);
+                    d1.setSeconds(0);
+                    d1.setMilliseconds(0);
+                } else {
+                    d1.setUTCHours(0);
+                    d1.setUTCMinutes(0);
+                    d1.setUTCSeconds(0);
+                    d1.setUTCMilliseconds(0);
+                }
+
                 d1.kind = d.kind;
+                d1.ticks = System.DateTime.getTicks(d1);
 
                 return d1;
             },
@@ -9745,22 +9859,23 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
             },
 
             gt: function (a, b) {
-                return (System.DateTime.$is(a) && System.DateTime.$is(b)) ? (System.DateTime.getTicks(a) > System.DateTime.getTicks(b)) : false;
+                return (a != null && b != null) ? (System.DateTime.getTicks(a).gt(System.DateTime.getTicks(b))) : false;
             },
 
             gte: function (a, b) {
-                return (System.DateTime.$is(a) && System.DateTime.$is(b)) ? (System.DateTime.getTicks(a) >= System.DateTime.getTicks(b)) : false;
+                return (a != null && b != null) ? (System.DateTime.getTicks(a).gte(System.DateTime.getTicks(b))) : false;
             },
 
             lt: function (a, b) {
-                return (System.DateTime.$is(a) && System.DateTime.$is(b)) ? (System.DateTime.getTicks(a) < System.DateTime.getTicks(b)) : false;
+                return (a != null && b != null) ? (System.DateTime.getTicks(a).lt(System.DateTime.getTicks(b))) : false;
             },
 
             lte: function (a, b) {
-                return (System.DateTime.$is(a) && System.DateTime.$is(b)) ? (System.DateTime.getTicks(a) <= System.DateTime.getTicks(b)) : false;
+                return (a != null && b != null) ? (System.DateTime.getTicks(a).lte(System.DateTime.getTicks(b))) : false;
             }
         }
     });
+
     // @source TimeSpan.js
 
     Bridge.define("System.TimeSpan", {
@@ -9933,7 +10048,7 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
         },
 
         equals: function (other) {
-            return other.ticks.eq(this.ticks);
+            return Bridge.is(other, System.TimeSpan) ? other.ticks.eq(this.ticks) : false;
         },
 
         equalsT: function (other) {
@@ -10592,7 +10707,7 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
                         return this._condition;
                     }
                 }
-            }  
+            }
         },
 
         ctor: function (failureKind, failureMessage, userMessage, condition, innerException) {
@@ -11749,7 +11864,7 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
             }
 
             this.array = array;
-                
+
             if (Bridge.isNumber(offset)) {
                 if (offset < 0) {
                     throw new System.ArgumentOutOfRangeException("offset");
@@ -11771,10 +11886,10 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
             else {
                 this.count = array.length;
             }
-            
+
             if (array.length - this.offset < this.count) {
                 throw new ArgumentException();
-            }                
+            }
         },
 
         getArray: function () {
@@ -11876,14 +11991,16 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
     Bridge.define('System.Collections.Generic.IEnumerator$1', function (T) {
         return {
             inherits: [System.Collections.IEnumerator],
-            $kind: "interface"
+            $kind: "interface",
+            $variance: [1]
         };
     });
 
     Bridge.define('System.Collections.Generic.IEnumerable$1', function (T) {
         return {
             inherits: [System.Collections.IEnumerable],
-            $kind: "interface"
+            $kind: "interface",
+            $variance: [1]
         };
     });
 
@@ -11896,7 +12013,8 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
 
     Bridge.define('System.Collections.Generic.IEqualityComparer$1', function (T) {
         return {
-            $kind: "interface"
+            $kind: "interface",
+            $variance: [2]
         };
     });
 
@@ -11916,7 +12034,8 @@ Bridge.Class.addExtend(System.Boolean, [System.IComparable$1(System.Boolean), Sy
 
     Bridge.define('System.Collections.Generic.IComparer$1', function (T) {
         return {
-            $kind: "interface"
+            $kind: "interface",
+            $variance: [2]
         };
     });
 
@@ -13769,19 +13888,19 @@ Bridge.define("System.String", {
         fromCharArray: function (chars, startIndex, length) {
             if (chars == null) {
                 throw new System.ArgumentNullException("chars");
-            }                
+            }
 
             if (startIndex < 0) {
                 throw new System.ArgumentOutOfRangeException("startIndex");
             }
-                
+
             if (length < 0) {
                 throw new System.ArgumentOutOfRangeException("length");
             }
-                
+
             if (chars.length - startIndex < length) {
                 throw new System.ArgumentOutOfRangeException("startIndex");
-            }                
+            }
 
             var result = "";
 
@@ -13853,11 +13972,11 @@ Bridge.define("System.String", {
         },
 
         format: function (format, args) {
-            return System.String._format(System.Globalization.CultureInfo.getCurrentCulture(), format, !Array.isArray(args) ? Array.prototype.slice.call(arguments, 1) : args);
+            return System.String._format(System.Globalization.CultureInfo.getCurrentCulture(), format, Array.isArray(args) && arguments.length == 2 ? args : Array.prototype.slice.call(arguments, 1));
         },
 
         formatProvider: function (provider, format, args) {
-            return System.String._format(provider, format, !Array.isArray(args) ? Array.prototype.slice.call(arguments, 2) : args);
+            return System.String._format(provider, format, Array.isArray(args) && arguments.length == 3 ? args : Array.prototype.slice.call(arguments, 2));
         },
 
         _format: function (provider, format, args) {
@@ -17298,7 +17417,7 @@ Bridge.Class.addExtend(System.String, [System.IComparable$1(System.String), Syst
                     var array = buffer.getArray(),
                         count = buffer.getCount(),
                         offset = buffer.getOffset();
- 
+
                     var data = new Uint8Array(count);
 
                     for (var i = 0; i < count; i++) {
@@ -17308,7 +17427,7 @@ Bridge.Class.addExtend(System.String, [System.IComparable$1(System.String), Syst
                     if (messageType === "text") {
                         data = String.fromCharCode.apply(null, data);
                     }
- 
+
                     this.socket.send(data);
                 }
 
@@ -17516,20 +17635,24 @@ Bridge.Class.addExtend(System.String, [System.IComparable$1(System.String), Syst
 
     // @source Uri.js
 
-    Bridge.define("System.Uri", {
-        ctor: function (uriString) {
-            this.$initialize();
-            this.absoluteUri = uriString;
-        },
+Bridge.assembly("System", {}, function ($asm, globals) {
+        "use strict";
 
-        getAbsoluteUri: function () {
-            return this.absoluteUri;
-        },
+        Bridge.define("System.Uri", {
+            ctor: function (uriString) {
+                this.$initialize();
+                this.absoluteUri = uriString;
+            },
 
-        toJSON: function () {
-            return this.absoluteUri;
-        }
-    });
+            getAbsoluteUri: function () {
+                return this.absoluteUri;
+            },
+
+            toJSON: function () {
+                return this.absoluteUri;
+            }
+        });
+    }, true);
 
     // @source Generator.js
 
@@ -20751,7 +20874,7 @@ Bridge.Class.addExtend(System.String, [System.IComparable$1(System.String), Syst
                 }
 
                 if (b.length !== 16) {
-                    throw new System.ArgumentException(System.String.format(System.Guid.error1, Bridge.box(16, System.Int32)));
+                    throw new System.ArgumentException(System.String.format(System.Guid.error1, [Bridge.box(16, System.Int32)]));
                 }
 
                 this._a = (b[System.Array.index(3, b)] << 24) | (b[System.Array.index(2, b)] << 16) | (b[System.Array.index(1, b)] << 8) | b[System.Array.index(0, b)];
@@ -20787,7 +20910,7 @@ Bridge.Class.addExtend(System.String, [System.IComparable$1(System.String), Syst
                 }
 
                 if (d.length !== 8) {
-                    throw new System.ArgumentException(System.String.format(System.Guid.error1, Bridge.box(8, System.Int32)));
+                    throw new System.ArgumentException(System.String.format(System.Guid.error1, [Bridge.box(8, System.Int32)]));
                 }
 
                 this._a = a;
@@ -20876,7 +20999,10 @@ Bridge.Class.addExtend(System.String, [System.IComparable$1(System.String), Syst
                 var r = null;
 
                 if (System.String.isNullOrEmpty(input)) {
-                    throw new System.ArgumentNullException("input");
+                    if (check) {
+                        throw new System.ArgumentNullException("input");
+                    }
+                    return false;
                 }
 
                 if (System.String.isNullOrEmpty(format)) {
@@ -22643,7 +22769,7 @@ Bridge.Class.addExtend(System.String, [System.IComparable$1(System.String), Syst
 Bridge.define("System.Text.RegularExpressions.RegexParser", {
     statics: {
         _Q: 5, // quantifier
-        _S: 4, // ordinary stoppper
+        _S: 4, // ordinary stopper
         _Z: 3, // ScanBlank stopper
         _X: 2, // whitespace
         _E: 1, // should be escaped
@@ -29703,6 +29829,9 @@ Bridge.define("System.Text.RegularExpressions.RegexParser", {
                 } while (n < count);
                 return n;
             },
+            ReadToEndAsync: function () {
+                return System.Threading.Tasks.Task.fromResult(this.ReadToEnd());
+            },
             ReadToEnd: function () {
 
                 var chars = System.Array.init(4096, 0, System.Char);
@@ -29880,7 +30009,7 @@ Bridge.define("System.Text.RegularExpressions.RegexParser", {
                 }
             },
             Write$11: function (format, arg0) {
-                this.Write$10(System.String.formatProvider(this.FormatProvider, format, arg0));
+                this.Write$10(System.String.formatProvider(this.FormatProvider, format, [arg0]));
             },
             Write$12: function (format, arg0, arg1) {
                 this.Write$10(System.String.formatProvider(this.FormatProvider, format, arg0, arg1));
@@ -29987,7 +30116,7 @@ Bridge.define("System.Text.RegularExpressions.RegexParser", {
                 }
             },
             WriteLine$12: function (format, arg0) {
-                this.WriteLine$11(System.String.formatProvider(this.FormatProvider, format, arg0));
+                this.WriteLine$11(System.String.formatProvider(this.FormatProvider, format, [arg0]));
             },
             WriteLine$13: function (format, arg0, arg1) {
                 this.WriteLine$11(System.String.formatProvider(this.FormatProvider, format, arg0, arg1));
@@ -30679,6 +30808,45 @@ Bridge.define("System.Text.RegularExpressions.RegexParser", {
                             });
                         return resultArray.buffer;
                     }
+                },
+                ReadBytesAsync: function (path) {
+                    var tcs = new System.Threading.Tasks.TaskCompletionSource();
+
+                    if (Bridge.isNode) {
+                        var fs = require("fs");
+                        fs.readFile(path, function (err, data) {
+                            if (err != null) {
+                                throw new System.IO.IOException.ctor();
+                            }
+
+                            tcs.setResult(data);
+                        });
+                    } else {
+                        var req = new XMLHttpRequest();
+                        req.open("GET", path, true);
+                        req.overrideMimeType("text/plain; charset=binary-data");
+                        req.send(null);
+
+                        req.onreadystatechange = function () {
+                            if (req.readyState !== 4) {
+                                return;
+                            }
+
+                            if (req.status !== 200) {
+                                throw new System.IO.IOException.$ctor1(System.String.format("Status of request to {0} returned status: {1}", path, Bridge.box(req.status, System.UInt16)));
+                            }
+
+                            var text = req.responseText;
+                            var resultArray = new Uint8Array(text.length);
+                            System.String.toCharArray(text, 0, text.length).forEach(function (v, index, array) {
+                                    var $t;
+                                    return ($t = (v & 255) & 255, resultArray[index] = $t, $t);
+                                });
+                            tcs.setResult(resultArray.buffer);
+                        };
+                    }
+
+                    return tcs.task;
                 }
             }
         },
@@ -30714,7 +30882,7 @@ Bridge.define("System.Text.RegularExpressions.RegexParser", {
             },
             Length: {
                 get: function () {
-                    return System.Int64(this._buffer.byteLength);
+                    return System.Int64(this.GetInternalBuffer().byteLength);
                 }
             },
             Position: System.Int64(0)
@@ -30723,7 +30891,6 @@ Bridge.define("System.Text.RegularExpressions.RegexParser", {
             $ctor1: function (path, mode) {
                 this.$initialize();
                 System.IO.Stream.ctor.call(this);
-                this._buffer = System.IO.FileStream.ReadBytes(path);
                 this.name = path;
             },
             ctor: function (buffer, name) {
@@ -30744,6 +30911,66 @@ Bridge.define("System.Text.RegularExpressions.RegexParser", {
             Write: function (buffer, offset, count) {
                 throw new System.NotImplementedException();
             },
+            GetInternalBuffer: function () {
+                if (this._buffer == null) {
+                    this._buffer = System.IO.FileStream.ReadBytes(this.name);
+
+                }
+
+                return this._buffer;
+            },
+            EnsureBufferAsync: function () {
+                var $step = 0,
+                    $task1, 
+                    $taskResult1, 
+                    $jumpFromFinally, 
+                    $tcs = new System.Threading.Tasks.TaskCompletionSource(), 
+                    $returnValue, 
+                    $async_e, 
+                    $asyncBody = Bridge.fn.bind(this, function () {
+                        try {
+                            for (;;) {
+                                $step = System.Array.min([0,1,2,3], $step);
+                                switch ($step) {
+                                    case 0: {
+                                        if (this._buffer == null) {
+                                            $step = 1;
+                                            continue;
+                                        } 
+                                        $step = 3;
+                                        continue;
+                                    }
+                                    case 1: {
+                                        $task1 = System.IO.FileStream.ReadBytesAsync(this.name);
+                                        $step = 2;
+                                        $task1.continueWith($asyncBody);
+                                        return;
+                                    }
+                                    case 2: {
+                                        $taskResult1 = $task1.getAwaitedResult();
+                                        this._buffer = $taskResult1;
+                                        $step = 3;
+                                        continue;
+                                    }
+                                    case 3: {
+                                        $tcs.setResult(null);
+                                        return;
+                                    }
+                                    default: {
+                                        $tcs.setResult(null);
+                                        return;
+                                    }
+                                }
+                            }
+                        } catch($async_e1) {
+                            $async_e = System.Exception.create($async_e1);
+                            $tcs.setException($async_e);
+                        }
+                    }, arguments);
+
+                $asyncBody();
+                return $tcs.task;
+            },
             Read: function (buffer, offset, count) {
                 if (buffer == null) {
                     throw new System.ArgumentNullException("buffer");
@@ -30757,7 +30984,7 @@ Bridge.define("System.Text.RegularExpressions.RegexParser", {
                     throw new System.ArgumentOutOfRangeException("count");
                 }
 
-                if ((this.Length.sub(System.Int64(offset))).lt(System.Int64(count))) {
+                if ((((buffer.length - offset) | 0)) < count) {
                     throw new System.ArgumentException();
                 }
 
@@ -30770,7 +30997,7 @@ Bridge.define("System.Text.RegularExpressions.RegexParser", {
                     return 0;
                 }
 
-                var byteBuffer = new Uint8Array(this._buffer);
+                var byteBuffer = new Uint8Array(this.GetInternalBuffer());
                 if (num.gt(System.Int64(8))) {
                     for (var n = 0; System.Int64(n).lt(num); n = (n + 1) | 0) {
                         buffer[System.Array.index(((n + offset) | 0), buffer)] = byteBuffer[this.Position.add(System.Int64(n))];
@@ -31681,6 +31908,65 @@ Bridge.define("System.Text.RegularExpressions.RegexParser", {
                 }
 
                 return charsRead;
+            },
+            ReadToEndAsync: function () {
+                var $step = 0,
+                    $task1, 
+                    $task2, 
+                    $taskResult2, 
+                    $jumpFromFinally, 
+                    $tcs = new System.Threading.Tasks.TaskCompletionSource(), 
+                    $returnValue, 
+                    $async_e, 
+                    $asyncBody = Bridge.fn.bind(this, function () {
+                        try {
+                            for (;;) {
+                                $step = System.Array.min([0,1,2,3,4], $step);
+                                switch ($step) {
+                                    case 0: {
+                                        if (Bridge.is(this.stream, System.IO.FileStream)) {
+                                            $step = 1;
+                                            continue;
+                                        } 
+                                        $step = 3;
+                                        continue;
+                                    }
+                                    case 1: {
+                                        $task1 = this.stream.EnsureBufferAsync();
+                                        $step = 2;
+                                        $task1.continueWith($asyncBody);
+                                        return;
+                                    }
+                                    case 2: {
+                                        $task1.getAwaitedResult();
+                                        $step = 3;
+                                        continue;
+                                    }
+                                    case 3: {
+                                        $task2 = System.IO.TextReader.prototype.ReadToEndAsync.call(this);
+                                        $step = 4;
+                                        $task2.continueWith($asyncBody);
+                                        return;
+                                    }
+                                    case 4: {
+                                        $taskResult2 = $task2.getAwaitedResult();
+                                        $tcs.setResult($taskResult2);
+                                        return;
+                                    }
+                                    default: {
+                                        $tcs.setResult(null);
+                                        return;
+                                    }
+                                }
+                            }
+                        } catch($async_e1) {
+                            $async_e = System.Exception.create($async_e1);
+                            $tcs.setException($async_e);
+                        }
+                    }, arguments);
+
+                $asyncBody();
+                return $tcs.task;
             },
             ReadToEnd: function () {
                 if (this.stream == null) {
@@ -33288,7 +33574,7 @@ Bridge.define("System.Text.RegularExpressions.RegexParser", {
                 // m_length is of type int32 and is exposed as a property, so
                 // type of m_length can't be changed to accommodate.
                 if (bytes.length > 268435455) {
-                    throw new System.ArgumentException(System.String.format("The input array length must not exceed Int32.MaxValue / {0}. Otherwise BitArray.Length would exceed Int32.MaxValue.", Bridge.box(System.Collections.BitArray.BitsPerByte, System.Int32)), "bytes");
+                    throw new System.ArgumentException(System.String.format("The input array length must not exceed Int32.MaxValue / {0}. Otherwise BitArray.Length would exceed Int32.MaxValue.", [Bridge.box(System.Collections.BitArray.BitsPerByte, System.Int32)]), "bytes");
                 }
 
                 this.m_array = System.Array.init(System.Collections.BitArray.getArrayLength(bytes.length, System.Collections.BitArray.BytesPerInt32), 0, System.Int32);
@@ -33343,7 +33629,7 @@ Bridge.define("System.Text.RegularExpressions.RegexParser", {
                 }
                 // this value is chosen to prevent overflow when computing m_length
                 if (values.length > 67108863) {
-                    throw new System.ArgumentException(System.String.format("The input array length must not exceed Int32.MaxValue / {0}. Otherwise BitArray.Length would exceed Int32.MaxValue.", Bridge.box(System.Collections.BitArray.BitsPerInt32, System.Int32)), "values");
+                    throw new System.ArgumentException(System.String.format("The input array length must not exceed Int32.MaxValue / {0}. Otherwise BitArray.Length would exceed Int32.MaxValue.", [Bridge.box(System.Collections.BitArray.BitsPerInt32, System.Int32)]), "values");
                 }
 
                 this.m_array = System.Array.init(values.length, 0, System.Int32);
@@ -35470,6 +35756,107 @@ Bridge.define("System.Text.RegularExpressions.RegexParser", {
                     }
                     return System.Collections.HashHelpers.getPrime(newSize);
                 }
+            }
+        }
+    });
+
+    // @source browsableAttribute.js
+
+    Bridge.define("System.ComponentModel.BrowsableAttribute", {
+        inherits: [System.Attribute],
+        statics: {
+            fields: {
+                yes: null,
+                no: null,
+                default: null
+            },
+            ctors: {
+                init: function () {
+                    this.yes = new System.ComponentModel.BrowsableAttribute(true);
+                    this.no = new System.ComponentModel.BrowsableAttribute(false);
+                    this.default = System.ComponentModel.BrowsableAttribute.yes;
+                }
+            }
+        },
+        fields: {
+            browsable: false
+        },
+        props: {
+            Browsable: {
+                get: function () {
+                    return this.browsable;
+                }
+            }
+        },
+        ctors: {
+            init: function () {
+                this.browsable = true;
+            },
+            ctor: function (browsable) {
+                this.$initialize();
+                System.Attribute.ctor.call(this);
+                this.browsable = browsable;
+            }
+        },
+        methods: {
+            equals: function (obj) {
+                if (Bridge.referenceEquals(obj, this)) {
+                    return true;
+                }
+
+                var other = Bridge.as(obj, System.ComponentModel.BrowsableAttribute);
+
+                return (other != null) && other.Browsable === this.browsable;
+            },
+            getHashCode: function () {
+                return Bridge.getHashCode(this.browsable);
+            }
+        }
+    });
+
+    // @source defaultValueAttribute.js
+
+    Bridge.define("System.ComponentModel.DefaultValueAttribute", {
+        inherits: [System.Attribute],
+        fields: {
+            value: null
+        },
+        props: {
+            Value: {
+                get: function () {
+                    return this.value;
+                }
+            }
+        },
+        ctors: {
+            ctor: function (value) {
+                this.$initialize();
+                System.Attribute.ctor.call(this);
+                this.value = value;
+            }
+        },
+        methods: {
+            equals: function (obj) {
+                if (Bridge.referenceEquals(obj, this)) {
+                    return true;
+                }
+
+                var other = Bridge.as(obj, System.ComponentModel.DefaultValueAttribute);
+
+                if (other != null) {
+                    if (this.Value != null) {
+                        return Bridge.equals(this.Value, other.Value);
+                    } else {
+                        return (other.Value == null);
+                    }
+                }
+                return false;
+            },
+            getHashCode: function () {
+                return Bridge.getHashCode(this);
+            },
+            setValue: function (value) {
+                this.value = value;
             }
         }
     });

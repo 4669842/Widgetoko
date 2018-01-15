@@ -139,14 +139,14 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                     listener.addOnError(function (sender, err) {
                         // Stop capturing on error:
                         Electron.ipcRenderer.send("cmd-stop-capture");
-                        alert(System.String.format("Error: {0}", err));
+                        alert(System.String.format("Error: {0}", [err]));
                     });
 
                     return listener;
                 },
                 ToggleTheme: function () {
-                    var lightThemeLink = jQuery(System.String.format("link[href='{0}']", Widgetoko.RendererProcess.MainForm.LightThemeCss));
-                    var darkThemeLink = jQuery(System.String.format("link[href='{0}']", Widgetoko.RendererProcess.MainForm.DarkThemeCss));
+                    var lightThemeLink = jQuery(System.String.format("link[href='{0}']", [Widgetoko.RendererProcess.MainForm.LightThemeCss]));
+                    var darkThemeLink = jQuery(System.String.format("link[href='{0}']", [Widgetoko.RendererProcess.MainForm.DarkThemeCss]));
 
                     var newTheme = lightThemeLink.length === 0 ? Widgetoko.RendererProcess.MainForm.LightThemeCss : Widgetoko.RendererProcess.MainForm.DarkThemeCss;
 
@@ -156,7 +156,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         lightThemeLink.remove();
                     }
 
-                    jQuery("head").append(System.String.format("<link rel=\"stylesheet\" href=\"{0}\" >", newTheme));
+                    jQuery("head").append(System.String.format("<link rel=\"stylesheet\" href=\"{0}\" >", [newTheme]));
                 },
                 CreateNotification: function (tweet) {
                     var notifTitle = (tweet.user.name || "") + " is tweeting..";

@@ -12,7 +12,7 @@ var win = null;
 /**
  * @version 1.0.0.0
  * @copyright Copyright Object.NET, Inc. © 2017
- * @compiler Bridge.NET 16.3.2
+ * @compiler Bridge.NET 16.6.1
  */
 Bridge.assembly("Widgetoko", function ($asm, globals) {
     "use strict";
@@ -273,7 +273,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         msgBoxOpts.type = "info";
                         msgBoxOpts.title = "About";
                         msgBoxOpts.buttons = System.Array.init(["OK"], System.String);
-                        msgBoxOpts.message = System.String.concat(System.String.concat("Widgetoko.\n\nNode: " + (process.versions.node || "") + "\nChrome: ", process.versions.chrome) + "\nElectron: ", process.versions.electron);
+                        msgBoxOpts.message = System.String.concat(System.String.concat("Widgetoko.\r\n\r\nNode: " + (process.versions.node || "") + "\r\nChrome: ", process.versions.chrome) + "\r\nElectron: ", process.versions.electron);
 
                         Electron.dialog.showMessageBox(msgBoxOpts);
                     } }], System.Object) };
