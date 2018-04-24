@@ -51,8 +51,6 @@ namespace Widgetoko.RendererProcess
                 {
                     Electron.ipcRenderer.send(Constants.IPC.StopCapture);
                 }
-
-                return null;
             });
 
             jquery.jQuery.select("#captureFilterInput").on("keypress", (e, args) =>
@@ -61,20 +59,16 @@ namespace Widgetoko.RendererProcess
                 {
                     Electron.ipcRenderer.send(Constants.IPC.StartCapture);
                 }
-
-                return null;
             });
 
             jquery.jQuery.select(".play").on("click", (e, args) =>
             {
                 Electron.ipcRenderer.send(Constants.IPC.StartCapture);
-                return null;
             });
 
             jquery.jQuery.select(".pause").on("click", (e, args) =>
             {
                 Electron.ipcRenderer.send(Constants.IPC.StopCapture);
-                return null;
             });
         }
 
@@ -110,7 +104,7 @@ namespace Widgetoko.RendererProcess
 
             Electron.ipcRenderer.on(Constants.IPC.ClearCapture, () =>
             {
-                jquery.jQuery.select("#capturedItemsDiv").html("");
+                jquery.jQuery.select("#capturedItemsDiv").html((jquery.JQuery.htmlString)"");
                 jquery.jQuery.select("#placeholder").show();
             });
 
@@ -156,7 +150,7 @@ namespace Widgetoko.RendererProcess
                 AddTweetToPage(tweet);
 
                 // Notify about the obtained tweet:
-                var notificationEnabled = jquery.jQuery.select("#notificationEnabledCheckbox").@is(":checked");
+                var notificationEnabled = jquery.jQuery.select("#notificationEnabledCheckbox").@is((jquery.JQuery.Selector)":checked");
                 if (notificationEnabled)
                 {
                     // Use delay to avoid creating too many notifications:
@@ -201,7 +195,14 @@ namespace Widgetoko.RendererProcess
                 lightThemeLink.remove();
             }
 
-            jquery.jQuery.select("head").append($"<link rel=\"stylesheet\" href=\"{newTheme}\" >");
+            var htmlStr = (jquery.JQuery.htmlString) $"<link rel=\"stylesheet\" href=\"{newTheme}\" >";
+            var htmlOrNode = (Union<jquery.JQuery.htmlString, jquery.JQuery.TypeOrArray<Union<jquery.JQuery.Node, jquery.JQuery<jquery.JQuery.Node>>>>)htmlStr;
+            var htmlOrNodeArr =
+                new es5.Array<
+                    Union<jquery.JQuery.htmlString, jquery.JQuery.TypeOrArray<Union<jquery.JQuery.Node, jquery.JQuery<jquery.JQuery.Node>>>>
+                >(htmlOrNode);
+
+            jquery.jQuery.select("head").append(htmlOrNodeArr);
         }
 
         private static void CreateNotification(Tweet tweet)
@@ -264,7 +265,7 @@ namespace Widgetoko.RendererProcess
             div.appendChild(tweetContent);
 
             var capturedItemsDiv = jquery.jQuery.select("#capturedItemsDiv");
-            var capturedItems = capturedItemsDiv.children();
+            var capturedItems = capturedItemsDiv.children().Value;
 
             if (capturedItems.length > 0)
             {
@@ -274,7 +275,22 @@ namespace Widgetoko.RendererProcess
                 }
             }
 
-            capturedItemsDiv.prepend(div);
+            var divNode = (Union<jquery.JQuery.Node, jquery.JQuery<jquery.JQuery.Node>>) (jquery.JQuery.Node) div;
+            var divNodeType =(jquery.JQuery.TypeOrArray<Union<jquery.JQuery.Node, jquery.JQuery<jquery.JQuery.Node>>>)divNode;
+            var htmlOrNodeType = (Union<jquery.JQuery.htmlString, jquery.JQuery.TypeOrArray<Union<jquery.JQuery.Node, jquery.JQuery<jquery.JQuery.Node>>>>) divNodeType;
+            var htmlOrNodeTypeArr =
+                new es5.Array<
+                    Union<jquery.JQuery.htmlString, jquery.JQuery.TypeOrArray<Union<jquery.JQuery.Node, jquery.JQuery<jquery.JQuery.Node>>>>
+                >(htmlOrNodeType);
+
+            capturedItemsDiv.prepend(htmlOrNodeTypeArr);
         }
+    }
+
+    [External]
+    internal static class JQueryExtensions
+    {
+        [Template("{el}.on({eventName}, {handler})")]
+        public static extern void on<TElement>(this jquery.JQuery<TElement> el, string eventName, Action<jquery.JQueryKeyEventObject, object> handler);
     }
 }

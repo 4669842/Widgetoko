@@ -38,30 +38,21 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
             methods: {
                 ConfigureEventHandlers: function () {
                     jQuery("#captureFilterInput").on("input", function (e, args) {
-                        if (Widgetoko.RendererProcess.MainForm._isStarted) {
-                            Electron.ipcRenderer.send("cmd-stop-capture");
-                        }
-
-                        return null;
-                    });
-
+                            if (Widgetoko.RendererProcess.MainForm._isStarted) {
+                                Electron.ipcRenderer.send("cmd-stop-capture");
+                            }
+                        });
                     jQuery("#captureFilterInput").on("keypress", function (e, args) {
-                        if (e.keyCode === 13 && !Widgetoko.RendererProcess.MainForm._isStarted) {
-                            Electron.ipcRenderer.send("cmd-start-capture");
-                        }
-
-                        return null;
-                    });
-
+                            if (e.keyCode === 13 && !Widgetoko.RendererProcess.MainForm._isStarted) {
+                                Electron.ipcRenderer.send("cmd-start-capture");
+                            }
+                        });
                     jQuery(".play").on("click", function (e, args) {
-                        Electron.ipcRenderer.send("cmd-start-capture");
-                        return null;
-                    });
-
+                            Electron.ipcRenderer.send("cmd-start-capture");
+                        });
                     jQuery(".pause").on("click", function (e, args) {
-                        Electron.ipcRenderer.send("cmd-stop-capture");
-                        return null;
-                    });
+                            Electron.ipcRenderer.send("cmd-stop-capture");
+                        });
                 },
                 ConfigureIPC: function () {
                     Electron.ipcRenderer.on("cmd-start-capture", function () {
@@ -108,7 +99,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                     }
 
                     // Check filter value:
-                    var filter = Bridge.cast(jQuery("#captureFilterInput").val(), System.String);
+                    var filter = jQuery("#captureFilterInput").val();
                     if (System.String.isNullOrEmpty(filter)) {
                         alert("Please specify filter value.");
 
@@ -156,7 +147,11 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         lightThemeLink.remove();
                     }
 
-                    jQuery("head").append(System.String.format("<link rel=\"stylesheet\" href=\"{0}\" >", [newTheme]));
+                    var htmlStr = System.String.format("<link rel=\"stylesheet\" href=\"{0}\" >", [newTheme]);
+                    var htmlOrNode = htmlStr;
+                    var htmlOrNodeArr = new Array(htmlOrNode);
+
+                    jQuery("head").append(htmlOrNodeArr);
                 },
                 CreateNotification: function (tweet) {
                     var notifTitle = (tweet.user.name || "") + " is tweeting..";
@@ -207,7 +202,12 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         }
                     }
 
-                    capturedItemsDiv.prepend(div);
+                    var divNode = div;
+                    var divNodeType = divNode;
+                    var htmlOrNodeType = divNodeType;
+                    var htmlOrNodeTypeArr = new Array(htmlOrNodeType);
+
+                    capturedItemsDiv.prepend(htmlOrNodeTypeArr);
                 }
             }
         }

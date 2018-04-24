@@ -50,7 +50,7 @@ namespace Widgetoko.MainProcess
             {
                 // On macOS it is common for applications and their menu bar
                 // to stay active until the user quits explicitly with Cmd + Q
-                if (node.process.platform != Platform.darwin)
+                if (node.process2.platform != Platform.darwin)
                 {
                     app.quit();
                 }
@@ -107,7 +107,7 @@ namespace Widgetoko.MainProcess
                 splash.show();
             });
 
-            node.setTimeout(args =>
+            node.setTimeout2(args =>
             {
                 CreateMainWindow();
 
@@ -207,10 +207,9 @@ namespace Widgetoko.MainProcess
 
         private static void LoadWindow(electron.Electron.BrowserWindow win, string page)
         {
-            var windowUrl = ObjectLiteral.Create<node.url.Url>();
+            var windowUrl = ObjectLiteral.Create<node.url.URL>();
             windowUrl.pathname = node.path.join(node.__dirname, page);
             windowUrl.protocol = "file:";
-            windowUrl.slashes = true;
 
             var formattedUrl = node.url.format(windowUrl);
 
@@ -281,7 +280,7 @@ namespace Widgetoko.MainProcess
 
             ContextMenu = electron.Electron.Menu.buildFromTemplate(new[] { openMenuItem, captureMenuItem, visitMenuItem, exitMenuItem });
 
-            var iconPath = node.process.platform == Platform.darwin ? icon16Path : icon32Path;
+            var iconPath = node.process2.platform == Platform.darwin ? icon16Path : icon32Path;
 
             AppIcon = new electron.Electron.Tray(iconPath);
             AppIcon.setToolTip(Constants.AppTitle);
@@ -521,9 +520,9 @@ namespace Widgetoko.MainProcess
                             msgBoxOpts.buttons = new[] {"OK"};
                             msgBoxOpts.message = Constants.AppTitle + @".
 
-Node: " + node.process.versions.node + @"
-Chrome: " + node.process.versions["chrome"] + @"
-Electron: " + node.process.versions["electron"];
+Node: " + node.process2.versions.node + @"
+Chrome: " + node.process2.versions["chrome"] + @"
+Electron: " + node.process2.versions["electron"];
 
                             Electron.dialog.showMessageBox(msgBoxOpts);
                         }
@@ -737,7 +736,7 @@ Electron: " + node.process.versions["electron"];
 
         private static electron.Electron.Accelerator CreateMenuAccelerator(string value)
         {
-            if (node.process.platform == Platform.darwin)
+            if (node.process2.platform == Platform.darwin)
             {
                 value = value.Replace("Ctrl", "Command");
             }
@@ -789,7 +788,7 @@ Electron: " + node.process.versions["electron"];
 
             if (node.fs.existsSync(settingsPath))
             {
-                var fileData = node.fs.readFileSync(settingsPath, "utf8");
+                var fileData = node.fs.readFileSync((node.fs.PathLike)settingsPath, (Union<node.fs.readFile2Config2, string>)"utf8");
                 _settings = UserSettings.Deserialize(fileData);
             }
             else
@@ -807,7 +806,7 @@ Electron: " + node.process.versions["electron"];
             var settingsPath = node.path.join(userDataPath, Constants.UserSettingsFileName);
             var data = _settings.Serialize();
 
-            node.fs.writeFileSync(settingsPath, data);
+            node.fs.writeFileSync((node.fs.PathLike)settingsPath, data);
         }
     }
 }

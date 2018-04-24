@@ -37,23 +37,19 @@ namespace Widgetoko.RendererProcess
             {
                 var cred = new TwitterCredentials
                 {
-                    ApiKey = jquery.jQuery.select("#apiKeyInput").val() as string,
-                    ApiSecret = jquery.jQuery.select("#apiSecretInput").val() as string,
-                    AccessToken = jquery.jQuery.select("#accessTokenInput").val() as string,
-                    AccessTokenSecret = jquery.jQuery.select("#accessTokenSecretInput").val() as string,
+                    ApiKey = (string) jquery.jQuery.select("#apiKeyInput").val(),
+                    ApiSecret = (string) jquery.jQuery.select("#apiSecretInput").val(),
+                    AccessToken = (string) jquery.jQuery.select("#accessTokenInput").val(),
+                    AccessTokenSecret = (string) jquery.jQuery.select("#accessTokenSecretInput").val(),
                 };
 
                 Electron.ipcRenderer.send(Constants.IPC.SetCredentials, cred);
                 Electron.remote.getCurrentWindow().close();
-
-                return null;
             });
 
             jquery.jQuery.select("#cancelButton").on("click", (e, args) =>
             {
                 Electron.remote.getCurrentWindow().close();
-
-                return null;
             });
         }
     }

@@ -12,12 +12,13 @@ var win = null;
 /**
  * @version 1.0.0.0
  * @copyright Copyright Object.NET, Inc. © 2017
- * @compiler Bridge.NET 16.6.1
+ * @compiler Bridge.NET 17.0.0
  */
 Bridge.assembly("Widgetoko", function ($asm, globals) {
     "use strict";
 
     var path = require("path");
+    var Electron = require("electron");
     var url = require("url");
     var fs = require("fs");
 
@@ -179,7 +180,6 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                     var windowUrl = { };
                     windowUrl.pathname = path.join(__dirname, page);
                     windowUrl.protocol = "file:";
-                    windowUrl.slashes = true;
 
                     var formattedUrl = url.format(windowUrl);
 
