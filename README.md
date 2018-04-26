@@ -18,7 +18,7 @@ There are several options for installing Widgetoko. Packaged installers are avai
 
 Platform | Version | Installer
 ---- | ---- | ----
-Win | 1.0.0 | [Widgetoko.exe](https://github.com/bridgedotnet/Archives/raw/master/Widgetoko/1.0.1/Widgetoko.exe)
+Win | 1.0.1 | [Widgetoko.exe](https://github.com/bridgedotnet/Archives/raw/master/Widgetoko/1.0.1/Widgetoko.exe)
 Mac | 1.0.0 | [Widgetoko.dmg](https://github.com/bridgedotnet/Archives/raw/master/Widgetoko/1.0.0/Widgetoko.dmg)
 
 ## Build from source
