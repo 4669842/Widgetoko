@@ -39,6 +39,7 @@
     <Compile Include="Constants.cs" />
     <Compile Include="MainProcess\App.cs" />
     <Compile Include="MainProcess\UserSettings.cs" />
+    <Compile Include="RendererProcess\SplashScreen.cs" />
     <Compile Include="RendererProcess\OptionsForm.cs" />
     <Compile Include="Twitter\API\Tweet.cs" />
     <Compile Include="Twitter\API\TweetEntities.cs" />

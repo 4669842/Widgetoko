@@ -7,6 +7,8 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
 
     Bridge.define("Widgetoko.RendererProcess.MainForm", {
         main: function Main () {
+            jQuery("#appNameHeader").html(Electron.remote.getCurrentWindow().getTitle());
+
             // Configure handlers for IPC commands:
             Widgetoko.RendererProcess.MainForm.ConfigureIPC();
 

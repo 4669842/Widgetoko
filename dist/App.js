@@ -10,7 +10,7 @@ var Electron = require("electron");
 var win = null;
 
 /**
- * @version 1.0.0.0
+ * @version 1.0.1.0
  * @copyright Copyright Object.NET, Inc. © 2017
  * @compiler Bridge.NET 17.0.0
  */
@@ -114,7 +114,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                     options.width = 600;
                     options.height = 400;
                     options.icon = path.join(__dirname, "assets/app-icon/png/32.png");
-                    options.title = "Widgetoko";
+                    options.title = Widgetoko.MainProcess.App.GetAppNameWithVersion(true);
                     options.frame = false;
                     options.skipTaskbar = true;
                     options.show = false;
@@ -130,7 +130,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                     options.width = 600;
                     options.height = 800;
                     options.icon = path.join(__dirname, "assets/app-icon/png/32.png");
-                    options.title = "Widgetoko";
+                    options.title = Widgetoko.MainProcess.App.GetAppNameWithVersion(true);
                     options.show = false;
 
                     // Create the browser window.
@@ -273,7 +273,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         msgBoxOpts.type = "info";
                         msgBoxOpts.title = "About";
                         msgBoxOpts.buttons = System.Array.init(["OK"], System.String);
-                        msgBoxOpts.message = System.String.concat(System.String.concat("Widgetoko.\r\n\r\nNode: " + (process.versions.node || "") + "\r\nChrome: ", process.versions.chrome) + "\r\nElectron: ", process.versions.electron);
+                        msgBoxOpts.message = System.String.concat(System.String.concat((Widgetoko.MainProcess.App.GetAppNameWithVersion(false) || "") + "\r\n\r\nNode: " + (process.versions.node || "") + "\r\nChrome: ", process.versions.chrome) + "\r\nElectron: ", process.versions.electron);
 
                         Electron.dialog.showMessageBox(msgBoxOpts);
                     } }], System.Object) };
@@ -377,6 +377,13 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                     var data = Widgetoko.MainProcess.UserSettings.prototype.Serialize.call(Widgetoko.MainProcess.App._settings);
 
                     fs.writeFileSync(settingsPath, data);
+                },
+                GetAppNameWithVersion: function (getDisplayedVersion) {
+                    var fullVersion = Electron.app.getVersion();
+
+                    var version = getDisplayedVersion ? Bridge.toArray(System.Linq.Enumerable.from(System.String.split(fullVersion, [46].map(function (i) {{ return String.fromCharCode(i); }}))).take(2)).join(".") : fullVersion;
+
+                    return System.String.format("{0} {1}", "Widgetoko", version);
                 }
             }
         }

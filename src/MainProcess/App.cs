@@ -136,7 +136,7 @@ namespace Widgetoko.MainProcess
             options.width = 600;
             options.height = 400;
             options.icon = node.path.join(node.__dirname, "assets/app-icon/png/32.png");
-            options.title = Constants.AppTitle;
+            options.title = GetAppNameWithVersion(true);
             options.frame = false;
             options.skipTaskbar = true;
             options.show = false;
@@ -154,7 +154,7 @@ namespace Widgetoko.MainProcess
             options.width = 600;
             options.height = 800;
             options.icon = node.path.join(node.__dirname, "assets/app-icon/png/32.png");
-            options.title = Constants.AppTitle;
+            options.title = GetAppNameWithVersion(true);
             options.show = false;
 
             // Create the browser window.
@@ -518,7 +518,7 @@ namespace Widgetoko.MainProcess
                             msgBoxOpts.type = "info";
                             msgBoxOpts.title = "About";
                             msgBoxOpts.buttons = new[] {"OK"};
-                            msgBoxOpts.message = Constants.AppTitle + @".
+                            msgBoxOpts.message = GetAppNameWithVersion(false) + @"
 
 Node: " + node.process2.versions.node + @"
 Chrome: " + node.process2.versions["chrome"] + @"
@@ -807,6 +807,17 @@ Electron: " + node.process2.versions["electron"];
             var data = _settings.Serialize();
 
             node.fs.writeFileSync((node.fs.PathLike)settingsPath, data);
+        }
+
+        private static string GetAppNameWithVersion(bool getDisplayedVersion)
+        {
+            var fullVersion = Electron.app.getVersion();
+
+            var version = getDisplayedVersion
+                ? string.Join(".", fullVersion.Split('.').Take(2))
+                : fullVersion;
+
+            return $"{Constants.AppTitle} {version}";
         }
     }
 }

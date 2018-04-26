@@ -33,6 +33,8 @@ namespace Widgetoko.RendererProcess
 
         public static void Main()
         {
+            jquery.jQuery.select("#appNameHeader").html((jquery.JQuery.htmlString) Electron.remote.getCurrentWindow().getTitle());
+
             // Configure handlers for IPC commands:
             ConfigureIPC();
 
