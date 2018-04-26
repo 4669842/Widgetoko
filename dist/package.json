@@ -1,7 +1,7 @@
 {
   "name": "widgetoko",
   "productName": "Widgetoko",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Widgetoko: Built with C# and Bridge.NET",
   "homepage": "https://github.com/bridgedotnet/Widgetoko",
   "license": "Apache-2.0",
