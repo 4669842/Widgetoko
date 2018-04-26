@@ -30,7 +30,7 @@
   "build": {
     "appId": "com.electron.Widgetoko",
     "productName": "Widgetoko",
-    "copyright": "Copyright © 2017 Object.NET, Inc.",
+    "copyright": "Copyright © 2018 Object.NET, Inc.",
     "directories": {
       "output": "installers"
     },
