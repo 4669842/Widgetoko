@@ -53,24 +53,28 @@ namespace Widgetoko.RendererProcess
                 {
                     Electron.ipcRenderer.send(Constants.IPC.StopCapture);
                 }
+                return null;
             });
 
-            jquery.jQuery.select("#captureFilterInput").on("keypress", (e, args) =>
+            jquery.jQuery.select("#captureFilterInput").keypress((e, args) =>
             {
-                if (e.keyCode == 13 && !_isStarted)
+                if (e.As<jquery.JQueryKeyEventObject>().keyCode == 13 && !_isStarted)
                 {
                     Electron.ipcRenderer.send(Constants.IPC.StartCapture);
                 }
+                return null;
             });
 
             jquery.jQuery.select(".play").on("click", (e, args) =>
             {
                 Electron.ipcRenderer.send(Constants.IPC.StartCapture);
+                return null;
             });
 
             jquery.jQuery.select(".pause").on("click", (e, args) =>
             {
                 Electron.ipcRenderer.send(Constants.IPC.StopCapture);
+                return null;
             });
         }
 
@@ -197,14 +201,7 @@ namespace Widgetoko.RendererProcess
                 lightThemeLink.remove();
             }
 
-            var htmlStr = (jquery.JQuery.htmlString) $"<link rel=\"stylesheet\" href=\"{newTheme}\" >";
-            var htmlOrNode = (Union<jquery.JQuery.htmlString, jquery.JQuery.TypeOrArray<Union<jquery.JQuery.Node, jquery.JQuery<jquery.JQuery.Node>>>>)htmlStr;
-            var htmlOrNodeArr =
-                new es5.Array<
-                    Union<jquery.JQuery.htmlString, jquery.JQuery.TypeOrArray<Union<jquery.JQuery.Node, jquery.JQuery<jquery.JQuery.Node>>>>
-                >(htmlOrNode);
-
-            jquery.jQuery.select("head").append(htmlOrNodeArr);
+            jquery.jQuery.select("head").append($"<link rel=\"stylesheet\" href=\"{newTheme}\" >");
         }
 
         private static void CreateNotification(Tweet tweet)
@@ -277,22 +274,7 @@ namespace Widgetoko.RendererProcess
                 }
             }
 
-            var divNode = (Union<jquery.JQuery.Node, jquery.JQuery<jquery.JQuery.Node>>) (jquery.JQuery.Node) div;
-            var divNodeType =(jquery.JQuery.TypeOrArray<Union<jquery.JQuery.Node, jquery.JQuery<jquery.JQuery.Node>>>)divNode;
-            var htmlOrNodeType = (Union<jquery.JQuery.htmlString, jquery.JQuery.TypeOrArray<Union<jquery.JQuery.Node, jquery.JQuery<jquery.JQuery.Node>>>>) divNodeType;
-            var htmlOrNodeTypeArr =
-                new es5.Array<
-                    Union<jquery.JQuery.htmlString, jquery.JQuery.TypeOrArray<Union<jquery.JQuery.Node, jquery.JQuery<jquery.JQuery.Node>>>>
-                >(htmlOrNodeType);
-
-            capturedItemsDiv.prepend(htmlOrNodeTypeArr);
+            capturedItemsDiv.prepend(div);
         }
-    }
-
-    [External]
-    internal static class JQueryExtensions
-    {
-        [Template("{el}.on({eventName}, {handler})")]
-        public static extern void on<TElement>(this jquery.JQuery<TElement> el, string eventName, Action<jquery.JQueryKeyEventObject, object> handler);
     }
 }

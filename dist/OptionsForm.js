@@ -25,14 +25,17 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
             methods: {
                 ConfigureEventHandlers: function () {
                     jQuery("#okButton").on("click", function (e, args) {
-                            var cred = { ApiKey: jQuery("#apiKeyInput").val(), ApiSecret: jQuery("#apiSecretInput").val(), AccessToken: jQuery("#accessTokenInput").val(), AccessTokenSecret: jQuery("#accessTokenSecretInput").val() };
+                        var cred = { ApiKey: jQuery("#apiKeyInput").val(), ApiSecret: jQuery("#apiSecretInput").val(), AccessToken: jQuery("#accessTokenInput").val(), AccessTokenSecret: jQuery("#accessTokenSecretInput").val() };
 
-                            Electron.ipcRenderer.send("cmd-set-credentials", cred);
-                            Electron.remote.getCurrentWindow().close();
-                        });
+                        Electron.ipcRenderer.send("cmd-set-credentials", cred);
+                        Electron.remote.getCurrentWindow().close();
+                        return null;
+                    });
+
                     jQuery("#cancelButton").on("click", function (e, args) {
-                            Electron.remote.getCurrentWindow().close();
-                        });
+                        Electron.remote.getCurrentWindow().close();
+                        return null;
+                    });
                 }
             }
         }

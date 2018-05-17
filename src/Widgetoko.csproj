@@ -126,7 +126,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Retyped.jquery, Version=3.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Retyped.jquery.3.3.6685\lib\net40\Retyped.jquery.dll</HintPath>
+      <HintPath>packages\Retyped.jquery.3.3.6711\lib\net40\Retyped.jquery.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Retyped.node, Version=9.6.0.0, Culture=neutral, processorArchitecture=MSIL">

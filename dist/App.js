@@ -273,7 +273,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         msgBoxOpts.type = "info";
                         msgBoxOpts.title = "About";
                         msgBoxOpts.buttons = System.Array.init(["OK"], System.String);
-                        msgBoxOpts.message = System.String.concat(System.String.concat((Widgetoko.MainProcess.App.GetAppNameWithVersion(false) || "") + "\r\n\r\nNode: " + (process.versions.node || "") + "\r\nChrome: ", process.versions.chrome) + "\r\nElectron: ", process.versions.electron);
+                        msgBoxOpts.message = System.String.concat(System.String.concat((Widgetoko.MainProcess.App.GetAppNameWithVersion(false) || "") + "\n\nNode: " + (process.versions.node || "") + "\nChrome: ", process.versions.chrome) + "\nElectron: ", process.versions.electron);
 
                         Electron.dialog.showMessageBox(msgBoxOpts);
                     } }], System.Object) };

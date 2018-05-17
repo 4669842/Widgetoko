@@ -40,21 +40,28 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
             methods: {
                 ConfigureEventHandlers: function () {
                     jQuery("#captureFilterInput").on("input", function (e, args) {
-                            if (Widgetoko.RendererProcess.MainForm._isStarted) {
-                                Electron.ipcRenderer.send("cmd-stop-capture");
-                            }
-                        });
-                    jQuery("#captureFilterInput").on("keypress", function (e, args) {
-                            if (e.keyCode === 13 && !Widgetoko.RendererProcess.MainForm._isStarted) {
-                                Electron.ipcRenderer.send("cmd-start-capture");
-                            }
-                        });
-                    jQuery(".play").on("click", function (e, args) {
-                            Electron.ipcRenderer.send("cmd-start-capture");
-                        });
-                    jQuery(".pause").on("click", function (e, args) {
+                        if (Widgetoko.RendererProcess.MainForm._isStarted) {
                             Electron.ipcRenderer.send("cmd-stop-capture");
-                        });
+                        }
+                        return null;
+                    });
+
+                    jQuery("#captureFilterInput").keypress(function (e, args) {
+                        if (e.keyCode === 13 && !Widgetoko.RendererProcess.MainForm._isStarted) {
+                            Electron.ipcRenderer.send("cmd-start-capture");
+                        }
+                        return null;
+                    });
+
+                    jQuery(".play").on("click", function (e, args) {
+                        Electron.ipcRenderer.send("cmd-start-capture");
+                        return null;
+                    });
+
+                    jQuery(".pause").on("click", function (e, args) {
+                        Electron.ipcRenderer.send("cmd-stop-capture");
+                        return null;
+                    });
                 },
                 ConfigureIPC: function () {
                     Electron.ipcRenderer.on("cmd-start-capture", function () {
@@ -149,11 +156,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         lightThemeLink.remove();
                     }
 
-                    var htmlStr = System.String.format("<link rel=\"stylesheet\" href=\"{0}\" >", [newTheme]);
-                    var htmlOrNode = htmlStr;
-                    var htmlOrNodeArr = new Array(htmlOrNode);
-
-                    jQuery("head").append(htmlOrNodeArr);
+                    jQuery("head").append(System.String.format("<link rel=\"stylesheet\" href=\"{0}\" >", [newTheme]));
                 },
                 CreateNotification: function (tweet) {
                     var notifTitle = (tweet.user.name || "") + " is tweeting..";
@@ -204,12 +207,7 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         }
                     }
 
-                    var divNode = div;
-                    var divNodeType = divNode;
-                    var htmlOrNodeType = divNodeType;
-                    var htmlOrNodeTypeArr = new Array(htmlOrNodeType);
-
-                    capturedItemsDiv.prepend(htmlOrNodeTypeArr);
+                    capturedItemsDiv.prepend(div);
                 }
             }
         }

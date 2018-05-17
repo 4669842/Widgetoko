@@ -45,11 +45,13 @@ namespace Widgetoko.RendererProcess
 
                 Electron.ipcRenderer.send(Constants.IPC.SetCredentials, cred);
                 Electron.remote.getCurrentWindow().close();
+                return null;
             });
 
             jquery.jQuery.select("#cancelButton").on("click", (e, args) =>
             {
                 Electron.remote.getCurrentWindow().close();
+                return null;
             });
         }
     }
