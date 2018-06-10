@@ -170,8 +170,6 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                         var tweetUrl = System.String.format("https://twitter.com/{0}/status/{1}", tweet.user.screen_name, tweet.id_str);
 
                         Electron.shell.openExternal(tweetUrl);
-
-                        return null;
                     };
                 },
                 AddTweetToPage: function (tweet) {
@@ -181,8 +179,6 @@ Bridge.assembly("Widgetoko", function ($asm, globals) {
                     div.ondblclick = Bridge.fn.combine(div.ondblclick, function (e) {
                         var tweetUrl = System.String.format("https://twitter.com/{0}/status/{1}", tweet.user.screen_name, tweet.id_str);
                         Electron.shell.openExternal(tweetUrl);
-
-                        return null;
                     });
 
                     var img = ($t = document.createElement("img"), $t.className = "avatar", $t.src = tweet.user.profile_image_url, $t);

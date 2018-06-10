@@ -218,8 +218,6 @@ namespace Widgetoko.RendererProcess
                 var tweetUrl = $"https://twitter.com/{tweet.user.screen_name}/status/{tweet.id_str}";
 
                 Electron.shell.openExternal(tweetUrl);
-
-                return null;
             };
         }
 
@@ -234,8 +232,6 @@ namespace Widgetoko.RendererProcess
             {
                 var tweetUrl = $"https://twitter.com/{tweet.user.screen_name}/status/{tweet.id_str}";
                 Electron.shell.openExternal(tweetUrl);
-
-                return null;
             };
 
             var img = new dom.HTMLImageElement
@@ -264,7 +260,7 @@ namespace Widgetoko.RendererProcess
             div.appendChild(tweetContent);
 
             var capturedItemsDiv = jquery.jQuery.select("#capturedItemsDiv");
-            var capturedItems = capturedItemsDiv.children().Value;
+            var capturedItems = capturedItemsDiv.children();
 
             if (capturedItems.length > 0)
             {

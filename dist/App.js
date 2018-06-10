@@ -12,7 +12,7 @@ var win = null;
 /**
  * @version 1.0.1.0
  * @copyright Copyright Object.NET, Inc. © 2017
- * @compiler Bridge.NET 17.0.0
+ * @compiler Bridge.NET 17.1.0
  */
 Bridge.assembly("Widgetoko", function ($asm, globals) {
     "use strict";

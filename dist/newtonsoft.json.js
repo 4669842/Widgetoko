@@ -1,5 +1,5 @@
 /*
- * @version   : 1.7.0 - A Bridge.NET implementation of Newtonsoft.Json
+ * @version   : 1.8.0 - A Bridge.NET implementation of Newtonsoft.Json
  * @author    : Object.NET, Inc. http://www.bridge.net/
  * @copyright : Copyright (c) 2008-2018, Object.NET, Inc. (http://www.object.net/). All rights reserved.
  * @license   : See license.txt and https://github.com/bridgedotnet/Bridge.NET/blob/master/LICENSE.
@@ -244,7 +244,10 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
         statics: {
             fields: {
                 None: 0,
-                Objects: 1
+                Objects: 1,
+                Arrays: 2,
+                All: 3,
+                Auto: 4
             }
         },
         $flags: true
@@ -258,8 +261,8 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
             },
             ctors: {
                 init: function () {
-                    this.version = "1.7.0";
-                    this.compiler = "17.0.0";
+                    this.version = "1.8.0";
+                    this.compiler = "17.1.0";
                 }
             }
         }
@@ -601,7 +604,7 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                     }
                 },
 
-                SerializeObject: function (obj, formatting, settings, returnRaw, possibleType) {
+                SerializeObject: function (obj, formatting, settings, returnRaw, possibleType, dictKey) {
                     if (Bridge.is(formatting, Newtonsoft.Json.JsonSerializerSettings)) {
                         settings = formatting;
                         formatting = 0;
@@ -631,12 +634,13 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                         return String.fromCharCode(obj);
                     }
 
+                    var type = possibleType || objType;
+
                     if (typeof obj === "function") {
                         var name = Bridge.getTypeName(obj);
                         return returnRaw ? name : Newtonsoft.Json.JsonConvert.stringify(name, formatting);
                     } else if (typeof obj === "object") {
-                        var type = possibleType || objType,
-                            arr,
+                        var arr,
                             i;
 
                         var removeGuard = Newtonsoft.Json.JsonConvert.defaultGuard;
@@ -687,6 +691,9 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                         } else if (type === System.DateTime) {
                             var d = System.DateTime.format(obj, "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFFK");
                             return returnRaw ? d : Newtonsoft.Json.JsonConvert.stringify(d, formatting);
+                        } else if (type === System.TimeSpan) {
+                            var d = Bridge.toString(obj);
+                            return returnRaw ? d : Newtonsoft.Json.JsonConvert.stringify(d, formatting);
                         } else if (type === System.DateTimeOffset) {
                             var d = obj.ToString$1("yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFFK");
                             return returnRaw ? d : Newtonsoft.Json.JsonConvert.stringify(d, formatting);
@@ -695,7 +702,7 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                                 removeGuard();
                                 var json = System.Convert.toBase64String(obj);
                                 return returnRaw ? json : Newtonsoft.Json.JsonConvert.stringify(json, formatting);
-                            }
+                            }                            
 
                             arr = [];
 
@@ -704,7 +711,23 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                             }
 
                             obj = arr;
+
+                            if (settings && settings._typeNameHandling) {
+                                var handling = settings._typeNameHandling,
+                                    writeType = handling == 2 || handling == 3 || (handling == 4 && possibleType && possibleType !== objType);
+
+                                if (writeType) {
+                                    obj = {
+                                        "$type": Bridge.Reflection.getTypeQName(type),
+                                        "$values": arr
+                                    };
+                                }
+                            }
                         } else if (Bridge.Reflection.isEnum(type)) {
+                            if (dictKey) {
+                                return System.Enum.getName(type, obj);
+                            }
+
                             return returnRaw ? obj : Newtonsoft.Json.JsonConvert.stringify(obj, formatting);
                         } else if (type === System.Char) {
                             return returnRaw ? String.fromCharCode(obj) : Newtonsoft.Json.JsonConvert.stringify(String.fromCharCode(obj), formatting);
@@ -718,13 +741,22 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
 
                             while (enm.moveNext()) {
                                 var entr = enm.Current,
-                                    keyJson = Newtonsoft.Json.JsonConvert.SerializeObject(entr.key, formatting, settings, true, typeKey);
+                                    keyJson = Newtonsoft.Json.JsonConvert.SerializeObject(entr.key, formatting, settings, true, typeKey, true);
 
                                 if (typeof keyJson === "object") {
                                     keyJson = Bridge.toString(entr.key);
                                 }
 
                                 dict[keyJson] = Newtonsoft.Json.JsonConvert.SerializeObject(entr.value, formatting, settings, true, typeValue);
+                            }
+
+                            if (settings && settings._typeNameHandling) {
+                                var handling = settings._typeNameHandling,
+                                    writeType = handling == 1 || handling == 3 || (handling == 4 && possibleType && possibleType !== objType);
+
+                                if (writeType) {
+                                    dict["$type"] = Bridge.Reflection.getTypeQName(type);
+                                }
                             }
 
                             obj = dict;
@@ -740,6 +772,18 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                             }
 
                             obj = arr;
+
+                            if (settings && settings._typeNameHandling) {
+                                var handling = settings._typeNameHandling,
+                                    writeType = handling == 2 || handling == 3 || (handling == 4 && possibleType && possibleType !== objType);
+
+                                if (writeType) {
+                                    obj = {
+                                        "$type": Bridge.Reflection.getTypeQName(type),
+                                        "$values": arr
+                                    };
+                                }
+                            }
                         } else if (!wasBoxed) {
                             var raw = {},
                                 nometa = !Bridge.getMetadata(type);
@@ -747,7 +791,12 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                             Newtonsoft.Json.JsonConvert.validateReflectable(type);
 
                             if (settings && settings._typeNameHandling) {
-                                raw["$type"] = Bridge.Reflection.getTypeQName(type);
+                                var handling = settings._typeNameHandling,
+                                    writeType = handling == 1 || handling == 3 || (handling == 4 && possibleType && possibleType !== objType);
+
+                                if (writeType) {
+                                    raw["$type"] = Bridge.Reflection.getTypeQName(type);
+                                }                                
                             }
 
                             if (nometa) {
@@ -763,6 +812,16 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                             } else {
                                 var fields = Newtonsoft.Json.JsonConvert.getMembers(type, 4),
                                     camelCase = settings && Bridge.is(settings.ContractResolver, Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver);
+
+                                var methods = Bridge.Reflection.getMembers(type, 8, 54);
+
+                                if (methods.length > 0) {
+                                    for (var midx = 0; midx < methods.length; midx++) {
+                                        if (System.Attribute.isDefined(methods[midx], System.Runtime.Serialization.OnSerializingAttribute, false)) {
+                                            Bridge.Reflection.midel(methods[midx], obj)(null);
+                                        }
+                                    }                                    
+                                }
 
                                 for (i = 0; i < fields.length; i++) {
                                     var cfg = fields[i],
@@ -827,13 +886,28 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                                         }
                                     }
                                 }
+
+                                if (methods.length > 0) {
+                                    for (var midx = 0; midx < methods.length; midx++) {
+                                        if (System.Attribute.isDefined(methods[midx], System.Runtime.Serialization.OnSerializedAttribute, false)) {
+                                            Bridge.Reflection.midel(methods[midx], obj)(null);
+                                            break;
+                                        }
+                                    }
+                                }
                             }
 
                             obj = raw;
                         }
 
                         removeGuard();
-                    }
+                    } else if (Bridge.Reflection.isEnum(type)) {
+                        if (dictKey) {
+                            return System.Enum.getName(type, obj);
+                        }
+
+                        return returnRaw ? obj : Newtonsoft.Json.JsonConvert.stringify(obj, formatting);
+                    } 
 
                     return returnRaw ? obj : Newtonsoft.Json.JsonConvert.stringify(obj, formatting);
                 },
@@ -1004,6 +1078,7 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                             type !== System.Double &&
                             type !== System.Decimal &&
                             type !== Array &&
+                            !Bridge.Reflection.isAssignableFrom(System.Collections.IEnumerable, type) &&
                             !type.$isArray) {
                             return true;
                         }
@@ -1040,8 +1115,22 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                         }
                     }
 
-                    var isObject = type === Object || type === System.Object;
-                    if (isObject || type.$literal && !Bridge.getMetadata(type)) {
+                    var isObject = type === Object || type === System.Object,
+                        fromObject = Bridge.isObject(raw);
+
+
+                    if (isObject && fromObject && raw && raw.$type) {
+                        var realType = Bridge.Reflection.getType(raw.$type);
+
+                        if (realType === null) {
+                            throw TypeError(System.String.concat("Cannot find type: ", raw.$type));
+                        }
+
+                        type = realType;
+                        isObject = false;
+                    }
+
+                    if (isObject && fromObject || type.$literal && !Bridge.getMetadata(type)) {
                         return Bridge.merge(isObject ? {} : (instance || Bridge.createInstance(type)), raw);
                     }
 
@@ -1057,6 +1146,11 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                         if (type === System.String) {
                             return "false";
                         }
+
+                        if (isObject) {
+                            return Bridge.box(raw, System.Boolean, System.Boolean.toString);
+                        }
+
                         return def;
                     } else if (raw === true) {
                         if (type === System.Boolean) {
@@ -1078,6 +1172,10 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                         } else {
                             if (typeof def === "number") {
                                 return def + 1;
+                            }
+
+                            if (isObject) {
+                                return Bridge.box(raw, System.Boolean, System.Boolean.toString);
                             }
 
                             throw new System.ArgumentException(System.String.format("Could not cast or convert from {0} to {1}", Bridge.getTypeName(raw), Bridge.getTypeName(type)));
@@ -1122,9 +1220,14 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                             return raw.toString();
                         } else if (type === System.DateTime) {
                             return System.DateTime.create$2(raw | 0, 0);
+                        } else if (type === System.TimeSpan) {
+                            return System.TimeSpan.fromTicks(raw);
                         } else if (type === System.DateTimeOffset) {
                             return new System.DateTimeOffset.$ctor5(System.Int64(raw | 0), new System.DateTimeOffset.ctor().Offset);
                         } else {
+                            if (isObject) {
+                                return Bridge.box(raw, Bridge.getType(raw));
+                            }
                             throw new System.ArgumentException(System.String.format("Could not cast or convert from {0} to {1}", Bridge.getTypeName(raw), Bridge.getTypeName(type)));
                         }
                     } else if (typeof raw === "string") {
@@ -1187,6 +1290,8 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                             return raw.charCodeAt(0);
                         } else if (type === System.String) {
                             return field ? raw : JSON.parse(raw);
+                        } else if (type === System.TimeSpan) {
+                            return System.TimeSpan.parse(raw[0] == '"' ? JSON.parse(raw) : raw);
                         } else if (type === System.DateTime) {
                             var isUtc = System.String.endsWith(raw, "Z");
                             var format = "yyyy'-'MM'-'dd'T'HH':'mm':'ss.FFFFFFF" + (isUtc ? "'Z'" : "K");
@@ -1218,12 +1323,27 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                         } else if (type === System.Array.type(System.Byte, 1)) {
                             return System.Convert.fromBase64String(raw);
                         } else {
+                            if (isObject) {
+                                return raw;
+                            }
+
                             throw new System.ArgumentException(System.String.format("Could not cast or convert from {0} to {1}", Bridge.getTypeName(raw), Bridge.getTypeName(type)));
                         }
                     } else if (typeof raw === "object") {
                         if (def !== null && type.$kind !== "struct") {
                             return def;
                         } else if (Bridge.isArray(null, type)) {
+                            var typeName = raw["$type"];
+
+                            if (typeName != null) {
+                                type = Bridge.Reflection.getType(typeName);
+                                raw = raw["$values"];
+                            }
+
+                            if (type === null) {
+                                throw TypeError(System.String.concat("Cannot find type: ", typeName));
+                            }
+
                             if (raw.length === undefined) {
                                 return [];
                             }
@@ -1237,6 +1357,17 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
 
                             return arr;
                         } else if (Bridge.Reflection.isAssignableFrom(System.Collections.IList, type)) {
+                            var typeName = raw["$type"];
+
+                            if (typeName != null) {
+                                type = Bridge.Reflection.getType(typeName);
+                                raw = raw["$values"];
+                            }
+
+                            if (type === null) {
+                                throw TypeError(System.String.concat("Cannot find type: ", typeName));
+                            }
+
                             var typeElement = System.Collections.Generic.List$1.getElementType(type) || System.Object;
                             var list = instance ? {value: instance} : Newtonsoft.Json.JsonConvert.createInstance(type, raw, settings);
 
@@ -1261,6 +1392,18 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                                 typeValue = typesGeneric[1] || System.Object,
                                 names;
 
+                            var typeName = raw["$type"],
+                                handling = false;
+
+                            if (typeName != null) {
+                                type = Bridge.Reflection.getType(typeName);
+                                handling = true;
+                            }
+
+                            if (type === null) {
+                                throw TypeError(System.String.concat("Cannot find type: ", raw["$type"]));
+                            }
+
                             var dictionary = instance ? { value: instance } : Newtonsoft.Json.JsonConvert.createInstance(type, raw, settings);
 
                             if (dictionary && dictionary.$list) {
@@ -1271,7 +1414,7 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                             dictionary = dictionary.value;
 
                             for (var each in raw) {
-                                if (raw.hasOwnProperty(each)) {
+                                if (raw.hasOwnProperty(each) && (!handling || each !== "$type")) {
                                     if (names.indexOf(each) < 0) {
                                         dictionary.add(Newtonsoft.Json.JsonConvert.DeserializeObject(each, typeKey, settings, true), Newtonsoft.Json.JsonConvert.DeserializeObject(raw[each], typeValue, settings, true));
                                     }
@@ -1282,7 +1425,7 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                         } else {
                             var typeName = raw["$type"];
 
-                            if (settings && settings._typeNameHandling > 0 && typeName != null) {
+                            if (typeName != null) {
                                 type = Bridge.Reflection.getType(typeName);
                             }
 
@@ -1290,11 +1433,25 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                                 throw TypeError(System.String.concat("Cannot find type: ", raw["$type"]));
                             }
 
+                            if (!Bridge.getMetadata(type)) {
+                                return Bridge.merge(isObject ? {} : (instance || Bridge.createInstance(type)), raw);
+                            }
+
                             var o = instance ? { value: instance, names: i_names } : Newtonsoft.Json.JsonConvert.createInstance(type, raw, settings),
                                 names;
 
                             names = o.names || [];
                             o = o.value;
+
+                            var methods = Bridge.Reflection.getMembers(type, 8, 54);
+
+                            if (methods.length > 0) {
+                                for (var midx = 0; midx < methods.length; midx++) {
+                                    if (System.Attribute.isDefined(methods[midx], System.Runtime.Serialization.OnDeserializingAttribute, false)) {
+                                        Bridge.Reflection.midel(methods[midx], o)(null);
+                                    }
+                                }
+                            }
 
                             var camelCase = settings && Bridge.is(settings.ContractResolver, Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver),
                                 fields = Newtonsoft.Json.JsonConvert.getMembers(type, 4),
@@ -1435,6 +1592,14 @@ Bridge.assembly("Newtonsoft.Json", function ($asm, globals) {
                                         else if (type.$kind === "anonymous") {
                                             o[p.n] = result.value;
                                         }
+                                    }
+                                }
+                            }
+
+                            if (methods.length > 0) {
+                                for (var midx = 0; midx < methods.length; midx++) {
+                                    if (System.Attribute.isDefined(methods[midx], System.Runtime.Serialization.OnDeserializedAttribute, false)) {
+                                        Bridge.Reflection.midel(methods[midx], o)(null);
                                     }
                                 }
                             }
